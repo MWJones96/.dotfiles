@@ -9,3 +9,7 @@ plugins=(
 source $ZSH/oh-my-zsh.sh
 
 alias ll="ls -alF"
+
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init --path)"
+eval "$(pyenv virtualenv-init -)"
