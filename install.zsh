@@ -69,6 +69,7 @@ stow_dotfiles() {
 main() {
     install_dependencies
     stow_dotfiles
+    source $HOME/.zshrc
     print -P "%F{green}Setup complete!%f"
 }
 
