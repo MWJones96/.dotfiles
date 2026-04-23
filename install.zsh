@@ -46,7 +46,23 @@ stow_dotfiles() {
     cd "$DOTFILES_DIR"
     stow -R -t ~ vim
     stow -R -t ~ zsh
-    stow -R -t ~ system-config
+    mkdir -p ~/.config/tmux
+    stow -R -d . -t ~/.config/tmux tmux
+    # 2. Define the plugin path (matching your new .config setup)
+    TPM_PATH="$HOME/.config/tmux/plugins/tpm"
+
+    # 3. Check if TPM is installed; if not, clone it
+    if [ ! -d "$TPM_PATH" ]; then
+        echo "Installing TPM..."
+        git clone https://github.com/tmux-plugins/tpm "$TPM_PATH"
+    fi
+
+    # 4. Install the plugins (Catppuccin, Yank, etc.)
+    # This runs TPM's internal installer headlessly
+    echo "Installing tmux plugins..."
+    "$TPM_PATH/bin/install_plugins"
+
+    echo "Tmux setup complete!"
 }
 
 # --- Execution ---
