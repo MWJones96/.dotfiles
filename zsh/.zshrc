@@ -1,29 +1,7 @@
-# 1. Install Oh My Zsh if missing
-if [ ! -d "$HOME/.oh-my-zsh" ]; then
-    echo "Installing Oh My Zsh..."
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-fi
 export ZSH="$HOME/.oh-my-zsh"
-
 # Theme (Agnoster requires a Nerd Font or Powerline font)
 ZSH_THEME="agnoster"
 # Define the custom plugins directory
-ZSH_CUSTOM="$HOME/.oh-my-zsh/custom"
-
-# Function to clone if missing
-install_zsh_plugin() {
-    local repo_url=$1
-    local plugin_name=$2
-    if [ ! -d "$ZSH_CUSTOM/plugins/$plugin_name" ]; then
-        echo "Installing $plugin_name..."
-        git clone "$repo_url" "$ZSH_CUSTOM/plugins/$plugin_name"
-    fi
-}
-
-# Install your specific plugins
-install_zsh_plugin "https://github.com/zsh-users/zsh-autosuggestions" "zsh-autosuggestions"
-install_zsh_plugin "https://github.com/zsh-users/zsh-syntax-highlighting" "zsh-syntax-highlighting"
-# --- 2. PLUGINS ---
 # Standard OMZ plugins + your custom ones
 plugins=(
   git
