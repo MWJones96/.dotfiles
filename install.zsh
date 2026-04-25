@@ -1,4 +1,5 @@
 #!/bin/zsh
+set -e
 
 detect_os() {
     case "$(uname -s)" in
@@ -19,7 +20,6 @@ detect_os() {
     print -P "%F{cyan}Detected OS: $OS ${DISTRO:+($DISTRO)}%f"
 }
 
-
 install_dependencies() {
     if [[ "$OS" == "macos" ]]; then
         if ! command -v brew &>/dev/null; then
@@ -31,7 +31,7 @@ install_dependencies() {
         print -P "%F{yellow}Installing macOS packages via Homebrew...%f"
         # Core, Modern CLI, and Workflow
         brew install \
-            stow nvim curl coreutils build-essential \
+            stow nvim curl coreutils \
             eza bat ripgrep fd zoxide btop \
             fzf tmux tldr direnv starship
             
@@ -54,16 +54,16 @@ install_dependencies() {
     fi
 }
 
-install_zsh_plugin() {
-    local repo_url=$1
-    local plugin_name=$2
-    if [ ! -d "$ZSH_CUSTOM/plugins/$plugin_name" ]; then
-        echo "Installing $plugin_name..."
-        git clone "$repo_url" "$ZSH_CUSTOM/plugins/$plugin_name"
-    fi
-}
-
 install_oh_my_zsh() {
+    install_zsh_plugin() {
+        local repo_url=$1
+        local plugin_name=$2
+        if [ ! -d "$ZSH_CUSTOM/plugins/$plugin_name" ]; then
+            echo "Installing $plugin_name..."
+            git clone "$repo_url" "$ZSH_CUSTOM/plugins/$plugin_name"
+        fi
+    }
+
     export ZSH="$HOME/.oh-my-zsh"
     export ZSH_CUSTOM="$ZSH/custom"
 
@@ -72,11 +72,18 @@ install_oh_my_zsh() {
         sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc
     fi
 
+    if [ -f "$HOME/.zshrc" ] && [ ! -L "$HOME/.zshrc" ]; then
+        echo "Removing OMZ default config to make room for stow..."
+        rm "$HOME/.zshrc"
+    fi
+
     install_zsh_plugin "https://github.com/zsh-users/zsh-autosuggestions" "zsh-autosuggestions"
     install_zsh_plugin "https://github.com/zsh-users/zsh-syntax-highlighting" "zsh-syntax-highlighting"
 }
 
 stow_dotfiles() {
+    local DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
+
     print -P "%F{magenta}Symlinking configurations...%f"
     cd "$DOTFILES_DIR"
     stow -R -t ~ vim
