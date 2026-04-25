@@ -1,8 +1,7 @@
 export ZSH="$HOME/.oh-my-zsh"
-# Theme (Agnoster requires a Nerd Font or Powerline font)
+
 ZSH_THEME="agnoster"
-# Define the custom plugins directory
-# Standard OMZ plugins + your custom ones
+
 plugins=(
   git
   zsh-autosuggestions
