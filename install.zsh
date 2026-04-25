@@ -27,13 +27,29 @@ install_dependencies() {
             /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
             eval "$(/opt/homebrew/bin/brew shellenv)"
         fi
-        brew install stow nvim
+
+        print -P "%F{yellow}Installing macOS packages via Homebrew...%f"
+        # Core, Modern CLI, and Workflow
+        brew install \
+            stow nvim curl coreutils build-essential \
+            eza bat ripgrep fd zoxide btop \
+            fzf tmux tldr direnv starship
+            
     elif [[ "$OS" == "linux" ]]; then
-        print -P "%F{yellow}Updating and installing via sudo...%f"
         if [[ "$DISTRO" == "debian" ]]; then
-            sudo apt update && sudo apt install -y stow neovim
+            print -P "%F{yellow}Updating and installing via apt...%f"
+            sudo apt update
+            sudo apt install -y \
+                sudo curl wget stow build-essential unzip ca-certificates \
+                neovim eza ripgrep zoxide btop fzf tmux tldr direnv \
+                fd-find bat # Note: Debian specific naming
+
         elif [[ "$DISTRO" == "arch" ]]; then
-            sudo pacman -Syu --needed stow neovim
+            print -P "%F{yellow}Installing via pacman...%f"
+            sudo pacman -Syu --needed \
+                base-devel curl wget stow unzip \
+                neovim eza bat ripgrep fd zoxide btop \
+                fzf tmux tldr direnv
         fi
     fi
 }
@@ -87,5 +103,6 @@ detect_os
 install_dependencies
 install_oh_my_zsh
 stow_dotfiles
+install_tmux
 print -P "%F{green}Setup complete!%f"
 exec zsh
