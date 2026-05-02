@@ -1,43 +1,86 @@
-export ZSH="$HOME/.oh-my-zsh"
-
-ZSH_THEME="agnoster"
-
-plugins=(
-  git
-  zsh-autosuggestions
-  zsh-syntax-highlighting
+# --- Path Configurations ---
+typeset -U path
+path=(
+    $HOME/.local/bin
+    $HOME/.fzf/bin
+    $HOME/.cargo/bin
+    $path
 )
+export PATH
 
-# Load Oh My Zsh
-source $ZSH/oh-my-zsh.sh
+if [[ -f "/opt/homebrew/bin/brew" ]] then
+  # If you're using macOS, you'll want this enabled
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
 
-# --- 3. ALIASES & SHORTCUTS ---
-alias ll="ls -alF"
-alias la="ls -A"
-alias l="ls -CF"
-alias dotfiles="cd ~/.dotfiles"
-alias reload="exec zsh" # Quick command to refresh shell
+# Set the directory we want to store zinit and plugins
+ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 
-# --- 4. PYTHON (pyenv) ---
-export PYENV_ROOT="$HOME/.pyenv"
-[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
+# Download Zinit, if it's not there yet
+if [ ! -d "$ZINIT_HOME" ]; then
+   mkdir -p "$(dirname $ZINIT_HOME)"
+   git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
 
-# --- 5. NODE.JS (pnpm) ---
-export PNPM_HOME="/home/mwjones/.local/share/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
+fi
 
-# --- 6. TMUX & TERMINAL ---
-# Ensure colors work correctly
+# Source/Load zinit
+source "${ZINIT_HOME}/zinit.zsh"
+
+# Add in zsh plugins
+zinit light zsh-users/zsh-syntax-highlighting
+zinit light zsh-users/zsh-completions
+zinit light zsh-users/zsh-autosuggestions
+zinit light Aloxaf/fzf-tab
+
+# Add in snippets
+zinit snippet OMZL::git.zsh
+zinit snippet OMZP::git
+zinit snippet OMZP::sudo
+zinit snippet OMZP::archlinux
+zinit snippet OMZP::aws
+zinit snippet OMZP::kubectl
+zinit snippet OMZP::kubectx
+zinit snippet OMZP::command-not-found
+
+# Load completions
+autoload -Uz compinit && compinit
+
+zinit cdreplay -q
+
+# Keybindings
+bindkey -e
+bindkey '^p' history-search-backward
+bindkey '^n' history-search-forward
+bindkey '^[w' kill-region
+
+# History
+HISTSIZE=5000
+HISTFILE=~/.zsh_history
+SAVEHIST=$HISTSIZE
+HISTDUP=erase
+setopt appendhistory
+setopt sharehistory
+setopt hist_ignore_space
+setopt hist_ignore_all_dups
+setopt hist_save_no_dups
+setopt hist_ignore_dups
+setopt hist_find_no_dups
+
+# Completion styling
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
+
+# Aliases
+alias ls='ls --color'
+alias vim='nvim'
+alias c='clear'
+
 export TERM="xterm-256color"
 
-# --- 7. HISTORY SETTINGS ---
-HISTSIZE=10000
-SAVEHIST=10000
-setopt APPEND_HISTORY     # Append to history file rather than replace
-setopt SHARE_HISTORY      # Share history between different sessions
-setopt HIST_IGNORE_DUPS   # Don't record an entry that was just recorded
+# Shell integrations
+eval "$(fzf --zsh)"
+eval "$(zoxide init --cmd cd zsh)"
+eval "$(oh-my-posh init zsh)"
