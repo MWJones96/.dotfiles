@@ -95,4 +95,4 @@ if [[ "$SHELL" != *(zsh)* ]]; then
 fi
 
 # Source new .zshrc
-exec zsh
+exec zsh -l
