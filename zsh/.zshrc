@@ -74,13 +74,17 @@ zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 
 # Aliases
-alias ls='ls --color'
-alias vim='nvim'
+alias ls='eza --icons --git'
+alias ll='eza -lh --icons --git'
+alias la='eza -lah --icons --git'
+alias lt='eza --tree --icons'
+alias lx='eza -lh --sort=newest --icons'
+
 alias c='clear'
 
 export TERM="xterm-256color"
 
 # Shell integrations
 eval "$(fzf --zsh)"
-eval "$(zoxide init --cmd cd zsh)"
+eval "$(zoxide init zsh --cmd cd)"
 eval "$(oh-my-posh init zsh)"
