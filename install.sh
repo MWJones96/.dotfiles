@@ -5,11 +5,6 @@ set -e
 DOTFILES_DIR="${0:a:h}"
 cd "$DOTFILES_DIR"
 
-# Change default shell if not changed
-if [[ "$SHELL" != *(zsh)* ]]; then
-    chsh -s "$(which zsh)"
-fi
-
 check_system_dependencies() {
     local deps=(stow curl git unzip vim tmux)
     for dep in $deps; do
@@ -40,7 +35,7 @@ install_dependencies() {
     if ! command -v fzf &>/dev/null; then
         print -P "%F{cyan}Installing fzf...%f"
         git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-        ~/.fzf/install --bin --no-update-path --no-completion --no-key-bindings
+        ~/.fzf/install 
     fi
 
     local -A tools=(
@@ -93,6 +88,11 @@ stow_dotfiles
 install_tmux
 
 print -P "%F{green}Setup complete!%f"
+
+# Change default shell if not changed
+if [[ "$SHELL" != *(zsh)* ]]; then
+    chsh -s "$(which zsh)"
+fi
 
 # Source new .zshrc
 exec zsh
