@@ -11,18 +11,23 @@ if [[ "$SHELL" != *(zsh)* ]]; then
 fi
 
 check_system_dependencies() {
-    local deps=(stow curl git)
+    local deps=(stow curl git unzip vim tmux)
     for dep in $deps; do
         if ! command -v $dep &>/dev/null; then
             print -P "%F{red}Error: '$dep' is not installed. Please install it with your system's package manager.%f"
             exit 1
         fi
     done
+    if ! command -v cc &>/dev/null; then
+        print -P "%F{red}Error: Build tools not installed. Please install appropriate buildtools package for your distro.%f"
+        exit 1
+    fi
 }
 
 install_dependencies() {
     if ! command -v oh-my-posh &>/dev/null; then
         print -P "%F{cyan}Installing Oh My Posh...%f"
+    	mkdir -p ~/.local/bin
         curl -s https://ohmyposh.dev/install.sh | bash -s -- -d ~/.local/bin
     fi
 
@@ -31,6 +36,12 @@ install_dependencies() {
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     fi
     source "$HOME/.cargo/env"
+
+    if ! command -v fzf &>/dev/null; then
+        print -P "%F{cyan}Installing fzf...%f"
+        git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+        ~/.fzf/install --bin --no-update-path --no-completion --no-key-bindings
+    fi
 
     local -A tools=(
         eza eza
