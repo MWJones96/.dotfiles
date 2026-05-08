@@ -7,12 +7,15 @@ cd "$DOTFILES_DIR"
 
 check_system_dependencies() {
     local deps=(stow curl git unzip vim tmux)
+    print -P "%F{cyan}Required system dependencies: ${deps[*]}%f"
+
     for dep in $deps; do
         if ! command -v $dep &>/dev/null; then
             print -P "%F{red}Error: '$dep' is not installed. Please install it with your system's package manager.%f"
             exit 1
         fi
     done
+
     if ! command -v cc &>/dev/null; then
         print -P "%F{red}Error: Build tools not installed. Please install appropriate buildtools package for your distro.%f"
         exit 1
@@ -29,8 +32,8 @@ install_dependencies() {
     if ! command -v cargo &>/dev/null; then
         print -P "%F{cyan}Installing Rust...%f"
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    	source "$HOME/.cargo/env"
     fi
-    source "$HOME/.cargo/env"
 
     if ! command -v fzf &>/dev/null; then
         print -P "%F{cyan}Installing fzf...%f"
@@ -46,13 +49,10 @@ install_dependencies() {
 	tree-sitter-cli tree-sitter
     )
 
-    echo "Checking cargo tools..."
     for tool binary in ${(kv)tools}; do
         if ! command -v $binary &>/dev/null; then
             print -P "%F{yellow}Installing $tool...%f"
             cargo install $tool --locked
-        else
-            print -P "%F{green}✓ $tool already installed.%f"
         fi
     done
 }
@@ -67,9 +67,7 @@ install_nvim() {
 	
 	# Install NVChad	
 	git clone --depth 1 https://github.com/NvChad/starter ~/.config/nvim
-	rm -rf ~/.config/nvim/.git
-	rm ~/.config/nvim/.stylua.toml
-	rm -rf ~/.config/nvim/*
+	rm -rf ~/.config/nvim/*(D)
     fi
 }
 
