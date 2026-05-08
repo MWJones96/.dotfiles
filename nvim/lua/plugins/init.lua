@@ -1,4 +1,15 @@
-return {
+local plugins = {
+  {
+    "williamboman/mason.nvim",
+    opts = {
+      ensure_installed = {
+        "lua-language-server",
+        "stylua",
+        "rust-analyzer",
+        "codelldb",
+      },
+    },
+  },
   {
     "stevearc/conform.nvim",
     opts = require "configs.conform",
@@ -79,3 +90,5 @@ return {
     end
   },
 }
+
+return plugins

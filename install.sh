@@ -64,10 +64,6 @@ install_nvim() {
     	chmod u+x nvim-linux-x86_64.appimage
     	mkdir -p ~/.local/bin
     	mv nvim-linux-x86_64.appimage ~/.local/bin/nvim
-	
-	# Install NVChad	
-	git clone --depth 1 https://github.com/NvChad/starter ~/.config/nvim
-	rm -rf ~/.config/nvim/*(D)
     fi
 }
 
@@ -98,11 +94,21 @@ install_tmux() {
     echo "Tmux setup complete!"
 }
 
+install_nv_chad() {
+    nvim --headless \
+      -c "lua require('lazy').restore()" \
+      -c "lua require('lazy').load({ plugins = { 'ui', 'nvim-treesitter' } })" \
+      -c "lua require('nvchad.mason').install_all()" \
+      -c "lua require('nvim-treesitter.install').update({ with_sync = true })" \
+      -c "qa"
+}
+
 check_system_dependencies
 install_dependencies
 install_nvim
 stow_dotfiles
 install_tmux
+install_nv_chad
 
 print -P "%F{green}Setup complete!%f"
 
