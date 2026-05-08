@@ -66,7 +66,10 @@ install_nvim() {
     	mv nvim-linux-x86_64.appimage ~/.local/bin/nvim
 	
 	# Install NVChad	
-	git clone --depth 1 https://github.com/NvChad/starter ~/.config/nvim && rm -rf ~/.config/nvim/.git
+	git clone --depth 1 https://github.com/NvChad/starter ~/.config/nvim
+	rm -rf ~/.config/nvim/.git
+	rm ~/.config/nvim/.stylua.toml
+	rm -rf ~/.config/nvim/*
     fi
 }
 
@@ -80,6 +83,7 @@ stow_dotfiles() {
     stow -R -t ~ vim
     stow -R -t ~ zsh
     stow -R -t ~/.config/tmux tmux
+    stow -R -t ~/.config/nvim nvim 
 }
 
 install_tmux() {
