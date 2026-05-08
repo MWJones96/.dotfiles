@@ -43,6 +43,7 @@ install_dependencies() {
         ripgrep rg
         bottom btm
         zoxide zoxide
+	tree-sitter-cli tree-sitter
     )
 
     echo "Checking cargo tools..."
@@ -54,6 +55,19 @@ install_dependencies() {
             print -P "%F{green}✓ $tool already installed.%f"
         fi
     done
+}
+
+install_nvim() {
+    if ! command -v nvim &>/dev/null; then
+        print -P "%F{cyan}Installing Neovim...%f"
+    	curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage
+    	chmod u+x nvim-linux-x86_64.appimage
+    	mkdir -p ~/.local/bin
+    	mv nvim-linux-x86_64.appimage ~/.local/bin/nvim
+	
+	# Install NVChad	
+	git clone --depth 1 https://github.com/NvChad/starter ~/.config/nvim && rm -rf ~/.config/nvim/.git
+    fi
 }
 
 stow_dotfiles() {
@@ -84,6 +98,7 @@ install_tmux() {
 
 check_system_dependencies
 install_dependencies
+install_nvim
 stow_dotfiles
 install_tmux
 
