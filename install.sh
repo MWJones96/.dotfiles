@@ -5,19 +5,35 @@ set -e
 DOTFILES_DIR="${0:a:h}"
 cd "$DOTFILES_DIR"
 
-check_system_dependencies() {
-    local deps=(stow curl git unzip vim tmux)
-    print -P "%F{cyan}Required system dependencies: ${deps[*]}%f"
+install_system_dependencies() {
+    local os_type=$(uname -s)
+    local deps=(stow curl git unzip tmux vim)
 
-    for dep in $deps; do
-        if ! command -v $dep &>/dev/null; then
-            print -P "%F{red}Error: '$dep' is not installed. Please install it with your system's package manager.%f"
+    if [[ "$os_type" == "Darwin" ]]; then
+        print -P "%F{cyan}Detected macOS. Using Homebrew...%f"
+        if ! command -v brew &>/dev/null; then
+            print -P "%F{yellow}Homebrew not found. Installing...%f"
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        fi
+        brew install "${deps[@]}"
+    elif [[ "$os_type" == "Linux" ]]; then
+        print -P "%F{cyan}Detected Linux. Searching for package manager...%f"
+        
+        if command -v apt-get &>/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y "${deps[@]}" build-essential
+        elif command -v dnf &>/dev/null; then
+            sudo dnf install -y "${deps[@]}" @development-tools
+        elif command -v pacman &>/dev/null; then
+            sudo pacman -Syu --noconfirm "${deps[@]}" base-devel
+        elif command -v zypper &>/dev/null; then
+            sudo zypper install -y "${deps[@]}" -t pattern devel_basis
+        else
+            print -P "%F{red}Error: No supported package manager found (apt, dnf, pacman, zypper).%f"
             exit 1
         fi
-    done
-
-    if ! command -v cc &>/dev/null; then
-        print -P "%F{red}Error: Build tools not installed. Please install appropriate buildtools package for your distro.%f"
+    else
+        print -P "%F{red}Unsupported OS: $os_type%f"
         exit 1
     fi
 }
@@ -95,6 +111,7 @@ install_tmux() {
 }
 
 install_nv_chad() {
+    print -P "%F{magenta}Running NvChad headless setup...%f"
     nvim --headless \
       -c "lua require('lazy').restore()" \
       -c "lua require('lazy').load({ plugins = { 'ui', 'nvim-treesitter' } })" \
@@ -103,7 +120,7 @@ install_nv_chad() {
       -c "qa"
 }
 
-check_system_dependencies
+install_system_dependencies
 install_dependencies
 install_nvim
 stow_dotfiles
