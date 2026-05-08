@@ -71,9 +71,7 @@ install_dependencies() {
             cargo install $tool --locked
         fi
     done
-}
 
-install_nvim() {
     if ! command -v nvim &>/dev/null; then
         print -P "%F{cyan}Installing Neovim...%f"
     	curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage
@@ -122,7 +120,6 @@ install_nv_chad() {
 
 install_system_dependencies
 install_dependencies
-install_nvim
 stow_dotfiles
 install_tmux
 install_nv_chad
