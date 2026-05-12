@@ -1,6 +1,7 @@
 # --- Path Configurations ---
 typeset -U path
 path=(
+    $HOME/.local/share/bob/nvim-bin
     $HOME/.local/bin
     $HOME/.fzf/bin
     $HOME/.cargo/bin

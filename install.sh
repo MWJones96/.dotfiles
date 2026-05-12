@@ -63,6 +63,7 @@ install_dependencies() {
         bottom btm
         zoxide zoxide
 	tree-sitter-cli tree-sitter
+	bob-nvim bob
     )
 
     for tool binary in ${(kv)tools}; do
@@ -72,13 +73,8 @@ install_dependencies() {
         fi
     done
 
-    if ! command -v nvim &>/dev/null; then
-        print -P "%F{cyan}Installing Neovim...%f"
-    	curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage
-    	chmod u+x nvim-linux-x86_64.appimage
-    	mkdir -p ~/.local/bin
-    	mv nvim-linux-x86_64.appimage ~/.local/bin/nvim
-    fi
+    bob install stable
+    yes n | bob use stable
 }
 
 stow_dotfiles() {
@@ -131,5 +127,4 @@ if [[ "$SHELL" != *(zsh)* ]]; then
     chsh -s "$(which zsh)"
 fi
 
-# Source new .zshrc
-exec zsh -l
+echo "Installation complete. Please run 'source ~/.zshrc' or restart your terminal."
