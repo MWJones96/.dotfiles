@@ -1,13 +1,23 @@
 #!/usr/bin/env zsh
 set -e
 
+typeset -U path
+path=(
+    $HOME/.local/share/bob/nvim-bin
+    $HOME/.local/bin
+    $HOME/.fzf/bin
+    $HOME/.cargo/bin
+    $path
+)
+export PATH
+
 # Change to dotfiles dir if not there already
 DOTFILES_DIR="${0:a:h}"
 cd "$DOTFILES_DIR"
 
 install_system_dependencies() {
     local os_type=$(uname -s)
-    local deps=(stow curl git unzip tmux vim)
+    local deps=(stow curl wget git unzip tmux vim ca-certificates)
 
     if [[ "$os_type" == "Darwin" ]]; then
         print -P "%F{cyan}Detected macOS. Using Homebrew...%f"
@@ -41,37 +51,35 @@ install_system_dependencies() {
 install_dependencies() {
     if ! command -v oh-my-posh &>/dev/null; then
         print -P "%F{cyan}Installing Oh My Posh...%f"
-    	mkdir -p ~/.local/bin
+    	  mkdir -p ~/.local/bin
         curl -s https://ohmyposh.dev/install.sh | bash -s -- -d ~/.local/bin
     fi
 
     if ! command -v cargo &>/dev/null; then
         print -P "%F{cyan}Installing Rust...%f"
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    	source "$HOME/.cargo/env"
+    fi
+
+    if ! cargo binstall -V &> /dev/null; then
+        echo "cargo-binstall not found. Installing..."
+        curl -L https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+    else
+        echo "cargo-binstall is already installed!"
     fi
 
     if ! command -v fzf &>/dev/null; then
         print -P "%F{cyan}Installing fzf...%f"
         git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-        ~/.fzf/install 
+        ~/.fzf/install --bin --no-update-rc
     fi
 
-    local -A tools=(
-        eza eza
-        ripgrep rg
-        bottom btm
-        zoxide zoxide
-	tree-sitter-cli tree-sitter
-	bob-nvim bob
-    )
+    # List of tools to install
+    local tools=(eza bat ripgrep fd-find bottom zoxide tree-sitter-cli bob-nvim \
+      atuin dua tealdeer)
+    cargo binstall -y "${tools[@]}"
 
-    for tool binary in ${(kv)tools}; do
-        if ! command -v $binary &>/dev/null; then
-            print -P "%F{yellow}Installing $tool...%f"
-            cargo install $tool --locked
-        fi
-    done
+    # Initialize tldr cache if it was just installed
+    if command -v tldr &> /dev/null; then tldr --update; fi
 
     bob install stable
     yes n | bob use stable
@@ -120,11 +128,9 @@ stow_dotfiles
 install_tmux
 install_nv_chad
 
-print -P "%F{green}Setup complete!%f"
-
 # Change default shell if not changed
 if [[ "$SHELL" != *(zsh)* ]]; then
     chsh -s "$(which zsh)"
 fi
 
-echo "Installation complete. Please run 'source ~/.zshrc' or restart your terminal."
+print -P "%F{green}Installation complete. Please run 'source ~/.zshrc' or restart your terminal.%f"
