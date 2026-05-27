@@ -1,6 +1,14 @@
 require("nvchad.configs.lspconfig").defaults()
 
-local servers = { "html", "cssls" }
-vim.lsp.enable(servers)
+local lspconfig = require "lspconfig"
+local nvim_lsp = require "nvchad.configs.lspconfig"
 
--- read :h vim.lsp.config for changing options of lsp servers 
+local servers = { "html", "cssls", "rust_analyzer" }
+
+for _, lsp in ipairs(servers) do
+  lspconfig[lsp].setup {
+    on_attach = nvim_lsp.on_attach,
+    on_init = nvim_lsp.on_init,
+    capabilities = nvim_lsp.capabilities,
+  }
+end
