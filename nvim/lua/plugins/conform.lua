@@ -1,4 +1,4 @@
 return {
   "stevearc/conform.nvim",
-  opts = require "configs.conform",
+  opts = require "configs.conform"
 }

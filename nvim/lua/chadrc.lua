@@ -8,17 +8,16 @@ local M = {}
 M.base46 = {
 	theme = "tokyonight",
 
-	-- hl_override = {
-	-- 	Comment = { italic = true },
-	-- 	["@comment"] = { italic = true },
-	-- },
+  hl_override = {
+    -- Text & Icon Colors for each Git Status
+    NvimTreeGitDirty     = { fg = "yellow" },
+    NvimTreeGitStaged    = {},
+    NvimTreeGitNew       = { fg = "green" },
+    NvimTreeGitDeleted   = { fg = "red" },
+    NvimTreeGitMerge     = { fg = "purple" },
+    NvimTreeGitRename    = { fg = "blue" },
+    NvimTreeGitIgnored   = { fg = "dark_grey" },
+  },
 }
-
--- M.nvdash = { load_on_startup = true }
--- M.ui = {
---       tabufline = {
---          lazyload = false
---      }
--- }
 
 return M
