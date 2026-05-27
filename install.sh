@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-set -e
+set -eu
 
 typeset -U path
 path=(
@@ -31,7 +31,7 @@ install_system_dependencies() {
         
         if command -v apt-get &>/dev/null; then
             sudo apt-get update
-            sudo apt-get install -y "${deps[@]}" build-essential
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "${deps[@]}" build-essential
         elif command -v dnf &>/dev/null; then
             sudo dnf install -y "${deps[@]}" @development-tools
         elif command -v pacman &>/dev/null; then
