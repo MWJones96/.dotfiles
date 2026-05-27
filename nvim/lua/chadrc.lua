@@ -9,14 +9,13 @@ M.base46 = {
 	theme = "tokyonight",
 
   hl_override = {
-    -- Text & Icon Colors for each Git Status
-    NvimTreeGitDirty     = { fg = "yellow" },
-    NvimTreeGitStaged    = {},
-    NvimTreeGitNew       = { fg = "green" },
-    NvimTreeGitDeleted   = { fg = "red" },
-    NvimTreeGitMerge     = { fg = "purple" },
-    NvimTreeGitRename    = { fg = "blue" },
-    NvimTreeGitIgnored   = { fg = "dark_grey" },
+    NvimTreeGitDirty   = { fg = "yellow" },
+    NvimTreeGitStaged  = { fg = "green" },
+    NvimTreeGitMerge   = { fg = "red", bold = true },
+    NvimTreeGitRename  = { fg = "purple" },
+    NvimTreeGitNew     = { fg = "cyan" },
+    NvimTreeGitDeleted = { fg = "red" },
+    NvimTreeGitIgnored = { fg = "dark_grey" },
   },
 }
 
