@@ -14,6 +14,15 @@ return {
       dap = {
         adapter = cfg.get_codelldb_adapter(codelldb_path, liblldb_path)
       },
+      server = {
+        settings = {
+          ['rust-analyzer'] = {
+            check = {
+              command = "clippy",
+            }
+          }
+        }
+      }
     }
   end
 }

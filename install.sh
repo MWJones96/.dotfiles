@@ -75,7 +75,7 @@ install_dependencies() {
 
     # List of tools to install
     local tools=(eza bat ripgrep fd-find bottom zoxide tree-sitter-cli bob-nvim \
-      atuin dua tealdeer)
+      atuin dua tealdeer stylua)
     cargo binstall -y "${tools[@]}"
 
     # Initialize tldr cache if it was just installed
