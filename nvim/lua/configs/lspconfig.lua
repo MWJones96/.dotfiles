@@ -1,5 +1,5 @@
 local nvim_lsp = require "nvchad.configs.lspconfig"
-local servers = { "html", "cssls"}
+local servers = { "html", "cssls" }
 
 for _, lsp in ipairs(servers) do
   vim.lsp.config(lsp, {
