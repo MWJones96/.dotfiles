@@ -6,13 +6,13 @@ return {
   },
   build = ":TSUpdate",
   config = function()
-    local configs = require("nvim-treesitter")
+    local configs = require "nvim-treesitter"
 
-    configs.setup({
+    configs.setup {
       -- Your existing treesitter setup options here
-      ensure_installed = { "lua", "vim", "vimdoc", "rust" }, 
+      ensure_installed = { "lua", "vim", "vimdoc", "rust", "python" },
       highlight = { enable = true },
       indent = { enable = true },
-    })
+    }
   end,
 }
