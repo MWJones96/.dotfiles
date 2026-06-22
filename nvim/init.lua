@@ -35,3 +35,5 @@ require "configs.autocmds"
 vim.schedule(function()
   require "configs.mappings"
 end)
+
+vim.lsp.inlay_hint.enable(true)
