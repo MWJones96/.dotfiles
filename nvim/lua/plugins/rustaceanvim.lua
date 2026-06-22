@@ -6,8 +6,8 @@ return {
   config = function()
     local install_path = require("mason.settings").current.install_root_dir .. "/packages/codelldb"
     local extension_path = install_path .. "/extension"
-    local codelldb_path = extension_path .. "adapter/codelldb"
-    local liblldb_path = extension_path .. "lldb/lib/liblldb.dylib"
+    local codelldb_path = extension_path .. "/adapter/codelldb"
+    local liblldb_path = extension_path .. "/lldb/lib/liblldb.so"
     local cfg = require "rustaceanvim.config"
 
     vim.g.rustaceanvim = {
