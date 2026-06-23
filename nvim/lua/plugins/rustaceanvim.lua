@@ -16,21 +16,11 @@ return {
         adapter = cfg.get_codelldb_adapter(codelldb_path, liblldb_path),
       },
       server = {
-        on_attach = function(_, bufnr)
-          vim.keymap.set("n", "<leader>ca", function()
-            vim.cmd.RustLsp "codeAction"
-          end, { desc = "Code Action", buffer = bufnr })
-          vim.keymap.set("n", "<leader>dd", function()
-            vim.cmd.RustLsp "debuggables"
-          end, { desc = "Rust Debuggables", buffer = bufnr })
-          vim.keymap.set("n", "<leader>dt", function()
-            vim.cmd.RustLsp "testables"
-          end, { desc = "Rust Testables", buffer = bufnr })
-        end,
         default_settings = {
           ["rust-analyzer"] = {
             check = {
               command = "clippy",
+              extraArgs = { "--", "-W", "clippy::pedantic", "-W", "clippy::nursery" },
               features = "all",
             },
             imports = {
@@ -39,14 +29,16 @@ return {
               },
             },
             inlayHints = {
-              bindingModeHints = { enable = true },
-              closingBraceHints = { enable = true },
-              closureReturnTypeHints = { enable = "always" },
-              discriminantHints = { enable = "always" },
-              expressionAdjustmentHints = { enable = "always" },
-              lifetimeElisionHints = { enable = "always" },
-              reborrowHints = { enable = "always" },
-              typeHints = { enable = true },
+              inlayHints = {
+                bindingModeHints = { enable = false },
+                closingBraceHints = { minLines = 10 },
+                closureReturnTypeHints = { enable = "always" },
+                discriminantHints = { enable = "always" },
+                expressionAdjustmentHints = { enable = "never" },
+                lifetimeElisionHints = { enable = "skip_trivial" },
+                reborrowHints = { enable = "never" },
+                typeHints = { enable = true },
+              },
             },
           },
         },
