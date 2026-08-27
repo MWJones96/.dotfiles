@@ -10,6 +10,12 @@ set -eu
 DOTFILES_DIR="${0:a:h}"
 cd "$DOTFILES_DIR"
 
+# Not every invocation context exports $USER (e.g. `docker exec -u`, some
+# minimal `su`/non-login shells) even though `id -un`/$HOME are always
+# correct — and both nix-darwin and home-manager's own CLIs read $USER
+# directly and fail with "unbound variable" if it's unset.
+export USER="${USER:-$(id -un)}"
+
 USERNAME="mxj"
 
 detect_os() {
@@ -34,11 +40,49 @@ detect_arch() {
     esac
 }
 
+# The Nix installer needs curl (to fetch itself) and xz (to unpack its own
+# binary tarball) — chicken-and-egg prerequisites Nix itself can't provide,
+# and a minimal fresh install (e.g. a base Ubuntu server image) commonly
+# lacks both. This is deliberately the ONLY thing still routed through a
+# system package manager; everything else goes through Nix. Checking and
+# installing explicitly (rather than letting `sh <(curl ...)` fail) also
+# sidesteps a real gotcha: `set -e` does not reliably catch a failure inside
+# a `<(...)` process substitution, so a missing curl there silently falls
+# through to later, more confusing errors instead of stopping cleanly here.
+ensure_bootstrap_prereqs() {
+    local missing=()
+    command -v curl &>/dev/null || missing+=(curl)
+    command -v xz &>/dev/null || missing+=(xz)
+    (( ${#missing[@]} == 0 )) && return
+
+    print -P "%F{cyan}Installing prerequisites for the Nix installer: ${missing[*]}...%f"
+    if command -v apt-get &>/dev/null; then
+        local pkgs=()
+        local m
+        for m in "${missing[@]}"; do
+            [[ "$m" == "xz" ]] && pkgs+=(xz-utils) || pkgs+=("$m")
+        done
+        sudo apt-get update -qq && sudo apt-get install -y "${pkgs[@]}"
+    elif command -v dnf &>/dev/null; then
+        sudo dnf install -y "${missing[@]}"
+    elif command -v pacman &>/dev/null; then
+        sudo pacman -Sy --noconfirm "${missing[@]}"
+    elif command -v zypper &>/dev/null; then
+        sudo zypper install -y "${missing[@]}"
+    elif command -v brew &>/dev/null; then
+        brew install "${missing[@]}"
+    else
+        print -P "%F{red}Error: missing ${missing[*]} and no supported package manager to install them. Install manually and re-run.%f"
+        exit 1
+    fi
+}
+
 install_nix() {
     if command -v nix &>/dev/null; then
         return
     fi
 
+    ensure_bootstrap_prereqs
     print -P "%F{cyan}Nix not found. Installing (multi-user daemon)...%f"
     sh <(curl -L https://nixos.org/nix/install) --daemon
 

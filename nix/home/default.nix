@@ -8,6 +8,12 @@
 
   home.packages = import ./packages.nix { inherit pkgs; };
 
+  # Defaults to false for a standalone (non-NixOS-module) home-manager setup,
+  # which silently leaves fonts installed via home.packages undiscoverable
+  # by fontconfig on Linux. No-op on macOS, which uses its own font-linking
+  # mechanism (~/Library/Fonts) instead of fontconfig.
+  fonts.fontconfig.enable = true;
+
   # Local dirs that aren't nix-provided packages (nix.cargo/bin, .fzf/bin, and
   # bob's nvim-bin are gone now that cargo/fzf/neovim come straight from nix).
   home.sessionPath = [
