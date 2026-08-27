@@ -1,3 +1,7 @@
 README.md
 .git
-install.zsh
+.gitignore
+install.sh
+flake.nix
+flake.lock
+nix

@@ -1,0 +1,6 @@
+# Nix build output symlinks (nix build / darwin-rebuild build)
+result
+result-*
+
+# macOS Finder cruft
+.DS_Store

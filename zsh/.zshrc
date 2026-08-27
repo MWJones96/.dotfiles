@@ -1,18 +1,4 @@
-# --- Path Configurations ---
-typeset -U path
-path=(
-    $HOME/.local/share/bob/nvim-bin
-    $HOME/.local/bin
-    $HOME/.fzf/bin
-    $HOME/.cargo/bin
-    $path
-)
-export PATH
-
-if [[ -f "/opt/homebrew/bin/brew" ]] then
-  # If you're using macOS, you'll want this enabled
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-fi
+# PATH is managed by home-manager (home.sessionPath) + nix-darwin now.
 
 # Set the directory we want to store zinit and plugins
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
@@ -44,6 +30,7 @@ zinit snippet OMZP::kubectx
 zinit snippet OMZP::command-not-found
 
 # Load completions
+fpath=(~/.docker/completions $fpath)
 autoload -Uz compinit && compinit
 
 zinit cdreplay -q

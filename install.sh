@@ -1,136 +1,107 @@
 #!/usr/bin/env zsh
 set -eu
 
-typeset -U path
-path=(
-    $HOME/.local/share/bob/nvim-bin
-    $HOME/.local/bin
-    $HOME/.fzf/bin
-    $HOME/.cargo/bin
-    $path
-)
-export PATH
+# Single-command bootstrap: installs Nix if needed, then hands everything
+# else (packages, dotfiles, tmux plugins, NvChad bootstrap) to flake.nix via
+# darwin-rebuild (macOS) or home-manager (Linux). See README.md for the
+# individual steps this automates, and nix/hosts/darwin.nix + nix/home/*.nix
+# for what actually gets installed.
 
-# Change to dotfiles dir if not there already
 DOTFILES_DIR="${0:a:h}"
 cd "$DOTFILES_DIR"
 
-install_system_dependencies() {
-    local os_type=$(uname -s)
-    local deps=(stow curl wget git unzip tmux vim ca-certificates)
+USERNAME="mxj"
 
-    if [[ "$os_type" == "Darwin" ]]; then
-        print -P "%F{cyan}Detected macOS. Using Homebrew...%f"
-        if ! command -v brew &>/dev/null; then
-            print -P "%F{yellow}Homebrew not found. Installing...%f"
-            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        fi
-        brew install "${deps[@]}"
-    elif [[ "$os_type" == "Linux" ]]; then
-        print -P "%F{cyan}Detected Linux. Searching for package manager...%f"
-        
-        if command -v apt-get &>/dev/null; then
-            sudo apt-get update
-            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "${deps[@]}" build-essential
-        elif command -v dnf &>/dev/null; then
-            sudo dnf install -y "${deps[@]}" @development-tools
-        elif command -v pacman &>/dev/null; then
-            sudo pacman -Syu --noconfirm "${deps[@]}" base-devel
-        elif command -v zypper &>/dev/null; then
-            sudo zypper install -y "${deps[@]}" -t pattern devel_basis
-        else
-            print -P "%F{red}Error: No supported package manager found (apt, dnf, pacman, zypper).%f"
+detect_os() {
+    case "$(uname -s)" in
+        Darwin) echo "darwin" ;;
+        Linux) echo "linux" ;;
+        *)
+            print -P "%F{red}Unsupported OS: $(uname -s)%f"
             exit 1
+            ;;
+    esac
+}
+
+detect_arch() {
+    case "$(uname -m)" in
+        x86_64) echo "x86_64" ;;
+        arm64|aarch64) echo "aarch64" ;;
+        *)
+            print -P "%F{red}Unsupported architecture: $(uname -m)%f"
+            exit 1
+            ;;
+    esac
+}
+
+install_nix() {
+    if command -v nix &>/dev/null; then
+        return
+    fi
+
+    print -P "%F{cyan}Nix not found. Installing (multi-user daemon)...%f"
+    sh <(curl -L https://nixos.org/nix/install) --daemon
+
+    # The daemon installer only wires PATH into new shells' profile scripts;
+    # this session needs it sourced directly to keep going.
+    local nix_profile_sh="/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
+    if [ -e "$nix_profile_sh" ]; then
+        . "$nix_profile_sh"
+    fi
+}
+
+enable_flakes() {
+    local nix_conf="/etc/nix/nix.conf"
+    local os="$1"
+
+    if [ -f "$nix_conf" ] && grep -q "experimental-features" "$nix_conf" 2>/dev/null; then
+        return
+    fi
+
+    print -P "%F{cyan}Enabling flakes in $nix_conf (one-time, needs sudo)...%f"
+    echo "experimental-features = nix-command flakes" | sudo tee -a "$nix_conf" >/dev/null
+
+    if [[ "$os" == "darwin" ]]; then
+        sudo launchctl kickstart -k system/org.nixos.nix-daemon
+    else
+        sudo systemctl restart nix-daemon
+    fi
+}
+
+# Anything still symlinked into place by the old `stow`-based setup would
+# make home-manager abort with "would be clobbered" (it won't auto-replace a
+# foreign symlink, only plain files). Move those aside instead of deleting.
+# No-op on a machine that's never run this before.
+retire_foreign_symlinks() {
+    local target
+    for target in "$HOME/.zshrc" "$HOME/.vimrc" "$HOME/.config/tmux/tmux.conf" "$HOME/.config/nvim"; do
+        if [ -L "$target" ] && [[ "$(readlink "$target")" != /nix/store/* ]]; then
+            print -P "%F{yellow}Moving pre-existing $target -> $target.pre-nix-backup%f"
+            mv "$target" "$target.pre-nix-backup"
         fi
+    done
+}
+
+main() {
+    local os arch
+    os="$(detect_os)"
+    arch="$(detect_arch)"
+
+    install_nix
+    enable_flakes "$os"
+    retire_foreign_symlinks
+
+    if [[ "$os" == "darwin" ]]; then
+        print -P "%F{magenta}Switching macOS to the Nix config (darwinConfigurations.macbook)...%f"
+        sudo nix --extra-experimental-features 'nix-command flakes' \
+            run nix-darwin -- switch --flake "${DOTFILES_DIR}#macbook"
     else
-        print -P "%F{red}Unsupported OS: $os_type%f"
-        exit 1
+        print -P "%F{magenta}Switching this Linux user to the Nix config (${arch}-linux)...%f"
+        nix --extra-experimental-features 'nix-command flakes' \
+            run home-manager -- switch --flake "${DOTFILES_DIR}#${USERNAME}-${arch}-linux" -b hm-backup
     fi
+
+    print -P "%F{green}Done. Open a new shell (and tmux session) to pick everything up.%f"
 }
 
-install_dependencies() {
-    if ! command -v oh-my-posh &>/dev/null; then
-        print -P "%F{cyan}Installing Oh My Posh...%f"
-    	  mkdir -p ~/.local/bin
-        curl -s https://ohmyposh.dev/install.sh | bash -s -- -d ~/.local/bin
-    fi
-
-    if ! command -v cargo &>/dev/null; then
-        print -P "%F{cyan}Installing Rust...%f"
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    fi
-
-    if ! cargo binstall -V &> /dev/null; then
-        echo "cargo-binstall not found. Installing..."
-        curl -L https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-    else
-        echo "cargo-binstall is already installed!"
-    fi
-
-    if ! command -v fzf &>/dev/null; then
-        print -P "%F{cyan}Installing fzf...%f"
-        git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-        ~/.fzf/install --bin --no-update-rc
-    fi
-
-    # List of tools to install
-    local tools=(eza bat ripgrep fd-find bottom zoxide tree-sitter-cli bob-nvim \
-      atuin dua tealdeer stylua)
-    cargo binstall -y "${tools[@]}"
-
-    # Initialize tldr cache if it was just installed
-    if command -v tldr &> /dev/null; then tldr --update; fi
-
-    bob install stable
-    yes n | bob use stable
-}
-
-stow_dotfiles() {
-    print -P "%F{magenta}Symlinking configurations...%f"
-
-    mkdir -p ~/.config/tmux
-    mkdir -p ~/.config/nvim
-    mkdir -p ~/.config/alacritty
-
-    stow -R -t ~ vim
-    stow -R -t ~ zsh
-    stow -R -t ~/.config/tmux tmux
-    stow -R -t ~/.config/nvim nvim 
-}
-
-install_tmux() {
-    TPM_PATH="$HOME/.config/tmux/plugins/tpm"
-
-    if [ ! -d "$TPM_PATH" ]; then
-        echo "Installing TPM..."
-        git clone https://github.com/tmux-plugins/tpm "$TPM_PATH"
-    fi
-
-    echo "Installing tmux plugins..."
-    "$TPM_PATH/bin/install_plugins"
-
-    echo "Tmux setup complete!"
-}
-
-install_nv_chad() {
-    print -P "%F{magenta}Running NvChad headless setup...%f"
-    nvim --headless \
-      -c "lua require('lazy').restore()" \
-      -c "lua require('lazy').load({ plugins = { 'ui', 'nvim-treesitter' } })" \
-      -c "lua require('nvchad.mason').install_all()" \
-      -c "lua require('nvim-treesitter.install').update({ with_sync = true })" \
-      -c "qa"
-}
-
-install_system_dependencies
-install_dependencies
-stow_dotfiles
-install_tmux
-install_nv_chad
-
-# Change default shell if not changed
-if [[ "$SHELL" != *(zsh)* ]]; then
-    chsh -s "$(which zsh)"
-fi
-
-print -P "%F{green}Installation complete. Please run 'source ~/.zshrc' or restart your terminal.%f"
+main
