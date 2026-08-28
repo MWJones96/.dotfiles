@@ -49,4 +49,16 @@
 
   # Lets nix-darwin patch /etc/zshrc so login shells pick up the nix profile.
   programs.zsh.enable = true;
+
+  # nix-darwin's generated /etc/zprofile replaces Apple's default one and
+  # doesn't call path_helper, so /etc/paths.d/* (where Homebrew's own
+  # installer put /opt/homebrew/bin) is never read anymore — Homebrew
+  # silently drops off PATH the moment this flake is switched to. This is
+  # the system-level fix (feeds /etc/zshenv's set-environment, so it covers
+  # login shells too — home.sessionPath in home-manager only covers
+  # non-login interactive shells and isn't enough on its own).
+  environment.systemPath = [
+    "/opt/homebrew/bin"
+    "/opt/homebrew/sbin"
+  ];
 }
