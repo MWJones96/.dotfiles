@@ -9,6 +9,7 @@ Nix-managed dotfiles and package set for macOS (via `nix-darwin`) and Linux
 flake.nix                # outputs: darwinConfigurations.macbook,
                           # homeConfigurations.mxj-{x86_64,aarch64}-linux
 install.sh                # single-command bootstrap (detects OS/arch)
+refresh.sh                # everyday "apply my latest change" command
 nix/
   hosts/
     darwin.nix             # macOS system config: Homebrew casks, nix-darwin settings
@@ -43,9 +44,10 @@ architecture from `uname` and runs the right thing. Concretely it:
    `home-manager switch --flake .#mxj-<arch>-linux -b hm-backup` on Linux.
 
 It's idempotent — safe to re-run any time, on a fresh machine or an
-already-set-up one. It's also literally what "apply my latest changes"
-reduces to (see below), so you never need to remember the underlying
-`darwin-rebuild`/`home-manager` invocation by hand.
+already-set-up one. For everyday changes after the machine is already set up,
+use `refresh.sh` instead (see below) — same underlying switch, but skips
+`install.sh`'s one-time bootstrap checks (Nix install, enabling flakes,
+retiring foreign symlinks) for a faster, more obviously-named command.
 
 ### Doing it manually instead
 
@@ -75,7 +77,7 @@ No `.nix` file needs to change for a content-only edit.
 Then apply it:
 
 ```bash
-~/.dotfiles/install.sh
+~/.dotfiles/refresh.sh
 ```
 
 A shell/tmux/editor config change needs a new shell, tmux session, or app
@@ -88,7 +90,7 @@ evaluation only looks at git-tracked paths, not the raw filesystem:
 
 ```bash
 git add path/to/new-file
-~/.dotfiles/install.sh
+~/.dotfiles/refresh.sh
 ```
 
 An edit to an *already-tracked* file needs no git step at all — only brand
@@ -100,7 +102,7 @@ Where to declare it depends on how widely you want it applied:
 
 - **Every machine, both OSs (the common case)** — add or remove the package
   name in [`nix/home/packages.nix`](nix/home/packages.nix), then
-  `install.sh`. No `flake.lock` update needed unless the package is newer
+  `refresh.sh`. No `flake.lock` update needed unless the package is newer
   than what's in the currently-pinned `nixpkgs` snapshot.
 - **This machine/OS only, but still declarative and reproducible** — add it
   to the host-specific file instead, e.g.
@@ -116,8 +118,8 @@ Where to declare it depends on how widely you want it applied:
   nix profile install nixpkgs#<package>
   ```
   This won't show up on a fresh machine (nothing in the repo declares it),
-  and `install.sh`/`darwin-rebuild`/`home-manager switch` won't touch it
-  either way.
+  and `install.sh`/`refresh.sh`/`darwin-rebuild`/`home-manager switch` won't
+  touch it either way.
 
 A GUI app on macOS that isn't practical to get from nixpkgs (like Alacritty)
 goes in `nix/hosts/darwin.nix`'s `homebrew.casks` instead of `packages.nix` —

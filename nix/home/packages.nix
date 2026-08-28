@@ -14,6 +14,19 @@ with pkgs; [
 
   rustc
   cargo
+  clippy
+  rustfmt
+  cargo-nextest
+
+  # python-lsp-server (Mason) needs an actual interpreter to run at all —
+  # was silently relying on whatever Python happens to be on the system.
+  python3
+  ruff
+  uv
+
+  # clangd (Mason) is LSP-only; these are what actually build/debug the code.
+  clang
+  cmake
 
   oh-my-posh
   fzf
