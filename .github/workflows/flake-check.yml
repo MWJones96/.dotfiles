@@ -1,0 +1,20 @@
+name: flake check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      # --no-build: evaluates every output (including darwinConfigurations,
+      # a foreign platform from this Linux runner) without trying to
+      # realize a macOS build closure here — same form used throughout
+      # local development.
+      - run: nix flake check --no-build

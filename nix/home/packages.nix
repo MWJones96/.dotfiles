@@ -42,6 +42,17 @@ with pkgs; [
   tealdeer
   stylua
 
+  # General dev workflow — not installed anywhere before this pass.
+  gh
+  lazygit
+  jq
+  delta
+  shellcheck
+  just
+  # Closes a real gap: conform.nvim formats css/html with this, but nothing
+  # installed it anywhere.
+  prettier
+
   # Referenced by alacritty/alacritty.toml. home-manager symlinks font
   # packages into ~/Library/Fonts on macOS automatically; on Linux it's
   # picked up via fontconfig.

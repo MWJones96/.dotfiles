@@ -7,7 +7,9 @@ set -eu
 # individual steps this automates, and nix/hosts/darwin.nix + nix/home/*.nix
 # for what actually gets installed.
 
-DOTFILES_DIR="${0:a:h}"
+# This script lives in <dotfiles>/scripts/ — the flake itself is one level up.
+SCRIPT_DIR="${0:a:h}"
+DOTFILES_DIR="${SCRIPT_DIR:h}"
 cd "$DOTFILES_DIR"
 
 # Not every invocation context exports $USER (e.g. `docker exec -u`, some

@@ -26,6 +26,7 @@
     ./tmux.nix
     ./editors.nix
     ./alacritty.nix
+    ./direnv.nix
   ];
 
   programs.home-manager.enable = true;

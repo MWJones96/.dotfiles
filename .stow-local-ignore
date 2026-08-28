@@ -1,8 +1,0 @@
-README.md
-.git
-.gitignore
-install.sh
-refresh.sh
-flake.nix
-flake.lock
-nix

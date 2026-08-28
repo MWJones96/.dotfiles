@@ -8,7 +8,9 @@ set -eu
 # (install.sh is itself idempotent and would also work here, but this skips
 # its one-time bootstrap checks.)
 
-DOTFILES_DIR="${0:a:h}"
+# This script lives in <dotfiles>/scripts/ — the flake itself is one level up.
+SCRIPT_DIR="${0:a:h}"
+DOTFILES_DIR="${SCRIPT_DIR:h}"
 cd "$DOTFILES_DIR"
 
 # See install.sh for why this is needed — not every invocation context

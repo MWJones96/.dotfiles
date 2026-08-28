@@ -8,15 +8,18 @@ Nix-managed dotfiles and package set for macOS (via `nix-darwin`) and Linux
 ```
 flake.nix                # outputs: darwinConfigurations.macbook,
                           # homeConfigurations.mxj-{x86_64,aarch64}-linux
-install.sh                # single-command bootstrap (detects OS/arch)
-refresh.sh                # everyday "apply my latest change" command
+scripts/
+  install.sh               # single-command bootstrap (detects OS/arch)
+  refresh.sh               # everyday "apply my latest change" command
+  add-package.sh           # add a package, permanently or as a one-off
+  remove-package.sh        # counterpart to add-package.sh
 nix/
   hosts/
     darwin.nix             # macOS system config: Homebrew casks, nix-darwin settings
   home/
     default.nix            # shared home-manager config, imports the rest below
     packages.nix            # CLI tools installed on every machine, both OSs
-    zsh.nix, tmux.nix, editors.nix, alacritty.nix   # one file per program
+    zsh.nix, tmux.nix, editors.nix, alacritty.nix, direnv.nix   # one file per program
 zsh/.zshrc, tmux/tmux.conf, vim/.vimrc, nvim/**, alacritty/alacritty.toml
                           # the actual dotfile contents — plain files, hand-edited
 ```
@@ -30,7 +33,7 @@ gets placed and *what packages* come with it.
 
 ```bash
 git clone https://github.com/MWJones96/.dotfiles.git ~/.dotfiles
-~/.dotfiles/install.sh
+~/.dotfiles/scripts/install.sh
 ```
 
 That one command works on both macOS and Linux — it detects the OS and CPU
@@ -77,7 +80,7 @@ No `.nix` file needs to change for a content-only edit.
 Then apply it:
 
 ```bash
-~/.dotfiles/refresh.sh
+~/.dotfiles/scripts/refresh.sh
 ```
 
 A shell/tmux/editor config change needs a new shell, tmux session, or app
@@ -90,7 +93,7 @@ evaluation only looks at git-tracked paths, not the raw filesystem:
 
 ```bash
 git add path/to/new-file
-~/.dotfiles/refresh.sh
+~/.dotfiles/scripts/refresh.sh
 ```
 
 An edit to an *already-tracked* file needs no git step at all — only brand
@@ -100,10 +103,30 @@ new files do.
 
 Where to declare it depends on how widely you want it applied:
 
-- **Every machine, both OSs (the common case)** — add or remove the package
-  name in [`nix/home/packages.nix`](nix/home/packages.nix), then
-  `refresh.sh`. No `flake.lock` update needed unless the package is newer
-  than what's in the currently-pinned `nixpkgs` snapshot.
+- **Every machine, both OSs (the common case)** —
+  ```bash
+  ./scripts/add-package.sh <package>       # add
+  ./scripts/remove-package.sh <package>    # remove
+  ```
+  Both verify the package name actually resolves in nixpkgs first (fast
+  attribute lookup, catches a typo before it's committed or half-applied),
+  edit [`nix/home/packages.nix`](nix/home/packages.nix), and offer to run
+  `refresh.sh` for you. (Equivalent to editing `packages.nix` by hand — the
+  scripts just add the existence check and save a step.) Removing doesn't
+  immediately delete anything from `/nix/store` — it just takes the package
+  off this machine's `PATH` on the next `refresh.sh`; the files themselves
+  get reclaimed whenever you next run a garbage-collection sweep
+  (`nix-collect-garbage`), which is normal Nix behavior, not something these
+  scripts need to manage.
+- **A one-off tool on this machine, not tracked anywhere** —
+  ```bash
+  ./scripts/add-package.sh --once <package>       # install
+  ./scripts/remove-package.sh --once <package>    # uninstall
+  ```
+  Runs `nix profile install`/`remove nixpkgs#<package>` directly. This won't
+  show up on a fresh machine (nothing in the repo declares it), and
+  `install.sh`/`refresh.sh`/`darwin-rebuild`/`home-manager switch` won't
+  touch it either way.
 - **This machine/OS only, but still declarative and reproducible** — add it
   to the host-specific file instead, e.g.
   [`nix/hosts/darwin.nix`](nix/hosts/darwin.nix)'s `environment.systemPackages`
@@ -111,15 +134,8 @@ Where to declare it depends on how widely you want it applied:
   there's one host per platform, so "host-specific" and "platform-specific"
   are the same thing — if a second Mac or Linux box ever needs to diverge
   from this one, that's the point to split `nix/hosts/` into one file per
-  machine.
-- **A one-off tool on this machine, not tracked anywhere** — install it
-  imperatively, completely outside the flake:
-  ```bash
-  nix profile install nixpkgs#<package>
-  ```
-  This won't show up on a fresh machine (nothing in the repo declares it),
-  and `install.sh`/`refresh.sh`/`darwin-rebuild`/`home-manager switch` won't
-  touch it either way.
+  machine. The add/remove scripts don't cover this case — edit the file
+  directly.
 
 A GUI app on macOS that isn't practical to get from nixpkgs (like Alacritty)
 goes in `nix/hosts/darwin.nix`'s `homebrew.casks` instead of `packages.nix` —
@@ -158,7 +174,3 @@ nvim (NvChad should look and behave the same).
   Opening nvim normally afterward and letting lazy.nvim finish on its own
   works around it; the headless step just doesn't guarantee full LSP/tool
   install on the very first run on a fresh machine.
-- **`.stow-local-ignore` is vestigial.** `stow` isn't invoked anywhere
-  anymore — `install.sh` does everything through `darwin-rebuild`/`home-manager`.
-  The file is kept up to date in case anyone ever runs `stow .` manually, but
-  it's not part of the real setup path.
