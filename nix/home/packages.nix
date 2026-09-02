@@ -1,7 +1,10 @@
 # Cross-platform CLI tools, replacing install.sh's brew/apt/dnf/pacman
 # branching and the rustup + cargo-binstall pipeline. Same package set on
 # macOS and every Linux distro.
-{ pkgs }:
+#
+# dotnetSdk is passed in rather than picked here because default.nix also needs
+# the very same derivation for DOTNET_ROOT — see the comment there.
+{ pkgs, dotnetSdk }:
 
 with pkgs; [
   git
@@ -27,6 +30,20 @@ with pkgs; [
   # clangd (Mason) is LSP-only; these are what actually build/debug the code.
   clang
   cmake
+
+  # Same deal for C#: Mason's LSP doesn't build anything. Pinned to 10.x in
+  # default.nix — plain `dotnet-sdk` is still 8.x in nixpkgs, and the
+  # quaisr/core services all target net10.0 (CI pins dotnet-version: 10.0.x).
+  dotnetSdk
+  # EF Core's CLI, for generating/inspecting migrations in services/Migrations.
+  # Packaged here rather than left to `dotnet tool install --global` so it
+  # comes with the config on a new machine. Note this is the standalone
+  # `dotnet-ef` binary — the `dotnet ef` subcommand form only works for tools
+  # installed into ~/.dotnet/tools.
+  dotnet-ef
+  # nvim-dap needs a real debugger binary, the same way clang above backs
+  # Mason's clangd.
+  netcoredbg
 
   oh-my-posh
   fzf
