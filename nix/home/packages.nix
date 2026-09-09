@@ -45,6 +45,21 @@ with pkgs; [
   # Mason's clangd.
   netcoredbg
 
+  # The web workspace's toolchain (vitest, eslint, the yarn workspaces in
+  # quaisr/core's web/). Corepack rather than nixpkgs' yarn because the repo
+  # pins `packageManager: yarn@4.13.0` and Yarn 4 refuses to run on a mismatch:
+  # nixpkgs' `yarn` is 1.x and `yarn-berry` is 4.14.1, so neither can satisfy
+  # it. Corepack fetches whatever version a repo asks for, which is also what
+  # CI does (`corepack enable`).
+  #
+  # `corepack enable` on its own fails here -- it writes shims next to the node
+  # binary, which is a read-only store path. Install them somewhere writable
+  # instead, once per machine:
+  #   corepack enable --install-directory ~/.local/bin
+  # (already on home.sessionPath). Or skip the shims and call `corepack yarn`.
+  nodejs_24
+  corepack_24
+
   oh-my-posh
   fzf
   eza
