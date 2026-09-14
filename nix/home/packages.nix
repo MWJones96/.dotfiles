@@ -85,6 +85,26 @@ with pkgs; [
   # installed it anywhere.
   prettier
 
+  # LaTeX, for building the CV in ~/dev/Resume. scheme-small plus exactly the
+  # packages Matthew_Jones_CV.tex's preamble reaches for -- texliveFull is
+  # ~7GB and this set is ~600MB. Two of these are named for their bundle
+  # rather than the .sty the document asks for: fullpage.sty comes from
+  # preprint, and footmisc is a dependency of ragged2e, not a direct import.
+  (texliveSmall.withPackages (ps: with ps; [
+    fontawesome
+    preprint
+    titlesec
+    marvosym
+    enumitem
+    fancyhdr
+    ragged2e
+    footmisc
+    microtype
+    # scheme-small ships the engines but not the build driver; latexmk runs
+    # pdflatex the two-or-three times hyperref's .out file needs.
+    latexmk
+  ]))
+
   # Referenced by alacritty/alacritty.toml. home-manager symlinks font
   # packages into ~/Library/Fonts on macOS automatically; on Linux it's
   # picked up via fontconfig.
