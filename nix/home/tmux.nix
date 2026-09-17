@@ -12,7 +12,14 @@
       sensible
       vim-tmux-navigator
       yank
-      catppuccin
+      {
+        plugin = catppuccin;
+        extraConfig = ''
+          set -g @catppuccin_flavor 'mocha'
+          set -g @catppuccin_window_text ' #W'
+          set -g @catppuccin_window_current_text ' #W'
+        '';
+      }
     ];
   };
 }
