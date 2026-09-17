@@ -1,5 +1,6 @@
 return {
   "lewis6991/gitsigns.nvim",
+  lazy = false,
   opts = function()
     local opts = require "nvchad.configs.gitsigns"
     opts.current_line_blame = true
