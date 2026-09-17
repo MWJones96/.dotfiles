@@ -31,11 +31,13 @@
   '';
 
   home.activation.nvchadSetup = lib.hm.dag.entryAfter [ "seedNvimLockfile" ] ''
+    export PATH="${pkgs.git}/bin:$PATH"
     $DRY_RUN_CMD ${pkgs.neovim}/bin/nvim --headless \
       -c "lua require('lazy').restore()" \
-      -c "lua require('lazy').load({ plugins = { 'ui', 'nvim-treesitter' } })" \
+      -c "lua require('lazy').load({ plugins = { 'ui', 'base46', 'nvim-treesitter' } })" \
       -c "lua require('nvchad.mason').install_all()" \
       -c "lua require('nvim-treesitter.install').update({ with_sync = true })" \
+      -c "lua require('base46').load_all_highlights()" \
       -c "qa"
   '';
 }
