@@ -1,16 +1,23 @@
 return {
   "nvim-treesitter/nvim-treesitter",
-  dependencies = {
-    "neovim-treesitter/treesitter-parser-registry",
-  },
+  branch = "main",
+  lazy = false,
   build = ":TSUpdate",
   config = function()
-    local configs = require "nvim-treesitter"
+    -- "stable" is nvim-treesitter's own tier of well-maintained parsers —
+    -- installing it covers all mainstream languages without hand-maintaining
+    -- a list (main branch dropped configs.setup's ensure_installed/highlight/
+    -- indent options; highlighting and indent are enabled below instead).
+    require("nvim-treesitter").install { "stable" }
 
-    configs.setup {
-      ensure_installed = { "lua", "vim", "vimdoc", "rust", "python" },
-      highlight = { enable = true },
-      indent = { enable = true },
-    }
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = "*",
+      callback = function()
+        pcall(vim.treesitter.start)
+        pcall(function()
+          vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        end)
+      end,
+    })
   end,
 }
