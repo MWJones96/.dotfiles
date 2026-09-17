@@ -10,7 +10,7 @@ return {
       },
 
       filters = {
-        git_ignored = false,
+        git_ignored = true,
         custom = { "^\\.git$" },
       },
 
@@ -27,9 +27,21 @@ return {
       renderer = {
         group_empty = true,
         symlink_destination = false,
+        indent_width = 2,
         highlight_git = "all",
         highlight_diagnostics = "name",
-        highlight_opened_files = "none",
+
+        decorators = {
+          "Git",
+          "Open",
+          "Hidden",
+          "Modified",
+          "Bookmark",
+          "Diagnostics",
+          "Copied",
+          "Cut",
+          require "configs.diagcount",
+        },
 
         root_folder_label = function(path)
           return vim.fn.fnamemodify(path, ":t"):upper()
@@ -49,16 +61,31 @@ return {
 
         icons = {
           git_placement = "right_align",
-          diagnostics_placement = "signcolumn",
+          padding = {
+            icon = " ",
+          },
+
+          web_devicons = {
+            file = { enable = true, color = true },
+            folder = { enable = false, color = false },
+          },
 
           show = {
             folder_arrow = true,
+            diagnostics = false,
+            bookmarks = false,
           },
 
           glyphs = {
             folder = {
-              arrow_closed = "",
-              arrow_open = "",
+              arrow_closed = "",
+              arrow_open = "",
+              default = "",
+              open = "",
+              empty = "",
+              empty_open = "",
+              symlink = "",
+              symlink_open = "",
             },
             git = {
               unstaged = "M",

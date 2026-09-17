@@ -13,9 +13,10 @@ M.base46 = {
     NvimTreeNormalNC = { bg = "black2" },
     NvimTreeEndOfBuffer = { fg = "black2", bg = "black2" },
     NvimTreeWinSeparator = { fg = "black2", bg = "black2" },
-    NvimTreeCursorLine = { bg = "one_bg" },
-    NvimTreeRootFolder = { fg = "light_grey", bold = true },
+    NvimTreeCursorLine = { bg = "#04395e" },
+    NvimTreeRootFolder = { fg = "light_grey", bold = false },
 
+    NvimTreeFolderIcon = { fg = "blue" },
     NvimTreeFolderName = { fg = "white" },
     NvimTreeOpenedFolderName = { fg = "white" },
     NvimTreeEmptyFolderName = { fg = "light_grey" },
