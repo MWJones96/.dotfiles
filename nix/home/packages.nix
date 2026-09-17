@@ -114,4 +114,4 @@ with pkgs; [
 # it's a proper .app in Applications/Spotlight — adding nixpkgs' build here
 # too would just be a redundant CLI-only duplicate. Linux has no such cask,
 # so it comes straight from nixpkgs there.
-++ lib.optional stdenv.isLinux alacritty
+++ lib.optional pkgs.stdenv.hostPlatform.isLinux alacritty

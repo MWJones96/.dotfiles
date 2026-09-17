@@ -7,7 +7,7 @@ let
 in
 {
   home.username = "mxj";
-  home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/mxj" else "/home/mxj";
+  home.homeDirectory = if pkgs.stdenv.hostPlatform.isDarwin then "/Users/mxj" else "/home/mxj";
   # Pinned once on first setup; do not bump casually — see home-manager docs.
   home.stateVersion = "24.11";
 
