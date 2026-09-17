@@ -25,18 +25,52 @@ M.ui = {
     order = { "mode", "file", "git", "%=", "lsp_msg", "%=", "diagnostics", "lsp", "cursor", "fileinfo", "cwd" },
     modules = {
       git = function()
+        local git = require "configs.gitstatus"
+        local status = git.get()
+
         local bufnr = vim.api.nvim_win_get_buf(vim.g.statusline_winid or 0)
-        local head = vim.b[bufnr].gitsigns_head or vim.g.gitsigns_head
-        if not head or head == "" then
+        local head = status.head
+        if head == "" then
+          head = vim.b[bufnr].gitsigns_head or vim.g.gitsigns_head or ""
+        end
+        if head == "" then
           return ""
         end
 
-        local status = vim.b[bufnr].gitsigns_status_dict or {}
-        local added = (status.added and status.added > 0) and ("  " .. status.added) or ""
-        local changed = (status.changed and status.changed > 0) and ("  " .. status.changed) or ""
-        local removed = (status.removed and status.removed > 0) and ("  " .. status.removed) or ""
+        local out = "%#St_GitBranch#  " .. head
+        if not status.tracked then
+          return out .. " "
+        end
 
-        return "%#StText#  " .. head .. added .. changed .. removed .. " "
+        local sync = ""
+        if status.ahead > 0 then
+          sync = sync .. "%#St_GitAhead#↑" .. status.ahead
+        end
+        if status.behind > 0 then
+          sync = sync .. "%#St_GitBehind#↓" .. status.behind
+        end
+        if sync ~= "" then
+          out = out .. " " .. sync
+        end
+
+        local counts = {}
+        if status.staged > 0 then
+          counts[#counts + 1] = "%#St_GitStaged#+" .. status.staged
+        end
+        if status.modified > 0 then
+          counts[#counts + 1] = "%#St_GitModified#~" .. status.modified
+        end
+        if status.untracked > 0 then
+          counts[#counts + 1] = "%#St_GitUntracked#?" .. status.untracked
+        end
+
+        if #counts > 0 then
+          out = out .. " " .. table.concat(counts, " ")
+        elseif sync == "" then
+          out = out .. " %#St_GitClean#✓"
+        end
+
+        return out .. " "
       end,
 
       fileinfo = function()
