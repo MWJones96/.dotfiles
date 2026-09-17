@@ -15,7 +15,7 @@ scripts/
   remove-package.sh        # counterpart to add-package.sh
 nix/
   hosts/
-    darwin.nix             # macOS system config: Homebrew casks, nix-darwin settings
+    darwin.nix             # macOS system config: leftover Homebrew, nix-darwin settings
   home/
     default.nix            # shared home-manager config, imports the rest below
     packages.nix            # CLI tools installed on every machine, both OSs
@@ -143,6 +143,38 @@ Homebrew does the actual install, declared as code. `homebrew.onActivation.clean
 is deliberately `"none"`, since this machine has plenty of Homebrew packages
 installed outside this config — flipping it to `"uninstall"`/`"zap"` would
 remove anything not explicitly listed here.
+
+### What's deliberately still Homebrew
+
+Everything nixpkgs can provide now comes from `packages.nix` — including the
+cloud/cluster tooling (`awscli2`, `azure-cli`, `kubectl`, `kubelogin`,
+`kubernetes-helm`, `kind`, `docker-client`) and the odds and ends that used to
+be `brew install`ed by hand (`yq-go`, `gnupg`, `stow`, `hatch`, `pipx`). Nix
+comes before `/opt/homebrew` on `PATH`, so these take over as soon as you
+switch, whether or not the old formula is still installed.
+
+What's left in Homebrew, and why:
+
+- **`alacritty`** (cask) — wanted as a real `.app` in Applications/Spotlight.
+- **`tfenv`** (formula) — its whole job is keeping several Terraform versions
+  side by side and selecting one per project via `~/.config/tfenv/version`.
+  A single `terraform` in `packages.nix` can't do that, so both stay off Nix.
+  `tfenv` shims `/opt/homebrew/bin/terraform`, which makes a separately
+  installed `terraform` formula redundant.
+
+Formulae predating this migration are now shadowed by their Nix equivalents.
+They're harmless but dead weight; to clear them out and let Homebrew
+garbage-collect their dependencies:
+
+```bash
+brew uninstall --ignore-dependencies awscli azure-cli curl docker eza gh \
+  gnupg hatch helm just kind kubelogin kubernetes-cli pcre pipx stow tmux \
+  unzip vim wget yq hashicorp/tap/terraform
+brew autoremove && brew cleanup
+```
+
+(`pcre` is in there because nothing installed depends on it any more; `git` is
+left out on purpose — Homebrew uses it internally.)
 
 ## Verifying a switch actually applied
 

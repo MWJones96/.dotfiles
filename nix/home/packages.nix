@@ -60,6 +60,32 @@ with pkgs; [
   nodejs_24
   corepack_24
 
+  # Cloud/cluster tooling, moved off Homebrew. `kubelogin` is Azure's
+  # (Azure/kubelogin, the AKS credential plugin) -- nixpkgs also ships
+  # int128/kubelogin as `kubelogin-oidc`, which is a different tool.
+  awscli2
+  azure-cli
+  kubectl
+  kubelogin
+  kubernetes-helm
+  kind
+  # Client only: the daemon is Docker Desktop's, and the `compose`/`buildx`
+  # subcommands come from Docker.app via ~/.docker/cli-plugins, so they keep
+  # working regardless of where the `docker` binary itself comes from.
+  docker-client
+
+  # nixpkgs' `yq` is the Python wrapper around jq; Homebrew's `yq` (and what
+  # the scripts here expect) is mikefarah's Go rewrite, which is `yq-go`.
+  yq-go
+  # macOS builds of gnupg already bake in pinentry-mac as the agent's pinentry
+  # program, so no gpg-agent.conf is needed to get a working prompt.
+  gnupg
+  # Superseded by home-manager for this repo, but still wanted for other
+  # people's stow-based dotfiles.
+  stow
+  hatch
+  pipx
+
   oh-my-posh
   fzf
   eza

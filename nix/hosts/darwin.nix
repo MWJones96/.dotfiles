@@ -23,8 +23,9 @@
     home = "/Users/mxj";
   };
 
-  # GUI apps that aren't practical to get from nixpkgs. Homebrew itself still
-  # does the actual install; this list is the only thing that's declarative.
+  # GUI apps that aren't practical to get from nixpkgs, plus the handful of
+  # CLIs nixpkgs can't replace. Homebrew itself still does the actual install;
+  # this list is the only thing that's declarative.
   #
   # cleanup is deliberately "none" (the default): this machine already has a
   # lot of brew formulae/casks installed outside this config, and "uninstall"
@@ -39,6 +40,14 @@
     };
     casks = [
       "alacritty"
+    ];
+    # tfenv is the one CLI here that nixpkgs can't sensibly replace: it exists
+    # to keep several Terraform versions side by side and pick one per project
+    # (~/.config/tfenv/version), which a single `terraform` in packages.nix
+    # can't do. It shims /opt/homebrew/bin/terraform, so the separate
+    # hashicorp/tap/terraform formula is redundant.
+    brews = [
+      "tfenv"
     ];
   };
 
