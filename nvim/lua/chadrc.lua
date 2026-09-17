@@ -9,13 +9,29 @@ M.base46 = {
   theme = "tokyonight",
 
   hl_override = {
-    NvimTreeGitDirty = { fg = "yellow" },
-    NvimTreeGitStaged = { fg = "green" },
-    NvimTreeGitMerge = { fg = "red", bold = true },
-    NvimTreeGitRename = { fg = "purple" },
-    NvimTreeGitNew = { fg = "cyan" },
-    NvimTreeGitDeleted = { fg = "red" },
-    NvimTreeGitIgnored = { fg = "dark_grey" },
+    NvimTreeNormal = { bg = "black2" },
+    NvimTreeNormalNC = { bg = "black2" },
+    NvimTreeEndOfBuffer = { fg = "black2", bg = "black2" },
+    NvimTreeWinSeparator = { fg = "black2", bg = "black2" },
+    NvimTreeCursorLine = { bg = "one_bg" },
+    NvimTreeRootFolder = { fg = "light_grey", bold = true },
+
+    NvimTreeFolderName = { fg = "white" },
+    NvimTreeOpenedFolderName = { fg = "white" },
+    NvimTreeEmptyFolderName = { fg = "light_grey" },
+    NvimTreeFolderArrowClosed = { fg = "light_grey" },
+    NvimTreeFolderArrowOpen = { fg = "light_grey" },
+    NvimTreeIndentMarker = { fg = "grey" },
+  },
+
+  hl_add = {
+    NvimTreeGitDirtyIcon = { fg = "yellow" },
+    NvimTreeGitStagedIcon = { fg = "green" },
+    NvimTreeGitNewIcon = { fg = "green" },
+    NvimTreeGitRenamedIcon = { fg = "green" },
+    NvimTreeGitDeletedIcon = { fg = "red" },
+    NvimTreeGitMergeIcon = { fg = "orange", bold = true },
+    NvimTreeGitIgnoredIcon = { fg = "grey_fg" },
   },
 }
 
