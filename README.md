@@ -206,3 +206,11 @@ nvim (NvChad should look and behave the same).
   Opening nvim normally afterward and letting lazy.nvim finish on its own
   works around it; the headless step just doesn't guarantee full LSP/tool
   install on the very first run on a fresh machine.
+- **The first C# buffer on a new machine is slow.** easy-dotnet.nvim fetches
+  `roslyn-language-server` (a ~200MB dotnet global tool) the first time you
+  open a `.cs` file, so completion and diagnostics only come alive a minute
+  or two in. It's a one-off; afterwards Roslyn starts in seconds. The other
+  dotnet tool it needs, `EasyDotnet`, is installed up front by
+  `nix/home/editors.nix` during activation, so only Roslyn is deferred.
+  `dotnet-easydotnet roslyn update` refreshes it later; `:checkhealth
+  easy-dotnet` reports what's missing.
