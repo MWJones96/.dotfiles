@@ -31,9 +31,11 @@ with pkgs; [
   clang
   cmake
 
-  # Same deal for C#: Mason's LSP doesn't build anything. Pinned to 10.x in
-  # default.nix — plain `dotnet-sdk` is still 8.x in nixpkgs, and the
-  # quaisr/core services all target net10.0 (CI pins dotnet-version: 10.0.x).
+  # Same deal for C#: Roslyn (which easy-dotnet.nvim fetches as a dotnet
+  # global tool) doesn't build anything, and it needs a real SDK to run on
+  # in the first place. Pinned to 10.x in default.nix — plain `dotnet-sdk`
+  # is still 8.x in nixpkgs, and the quaisr/core services all target net10.0
+  # (CI pins dotnet-version: 10.0.x).
   dotnetSdk
   # EF Core's CLI, for generating/inspecting migrations in services/Migrations.
   # Packaged here rather than left to `dotnet tool install --global` so it
@@ -84,6 +86,16 @@ with pkgs; [
   # Closes a real gap: conform.nvim formats css/html with this, but nothing
   # installed it anywhere.
   prettier
+  # conform.nvim's C# formatter. quaisr/core has no dotnet-tools.json, so
+  # conform's `dotnet csharpier` probe fails and it falls back to this one
+  # on PATH -- which is the reason it's worth installing here at all.
+  csharpier
+  # vscode-html-language-server, which easy-dotnet bridges markup-backed
+  # Razor requests to (completion/hover/formatting inside .razor markup);
+  # without it Razor still opens, but those requests come back empty. Also
+  # supplies the html/cssls servers nvim-lspconfig.lua enables, which until
+  # now nothing actually installed.
+  vscode-langservers-extracted
 
   # LaTeX, for building the CV in ~/dev/Resume. scheme-small plus exactly the
   # packages Matthew_Jones_CV.tex's preamble reaches for -- texliveFull is

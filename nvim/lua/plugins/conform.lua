@@ -7,12 +7,16 @@ return {
       css = { "prettier" },
       html = { "prettier" },
       rust = { "rustfmt" },
+      cs = { "csharpier" },
       -- fix lint issues, sort imports, then format — ruff's own recommended order
       python = { "ruff_fix", "ruff_organize_imports", "ruff_format" },
     },
 
     format_on_save = {
-      timeout_ms = 500,
+      -- csharpier shells out to a .NET process, which doesn't reliably come
+      -- back inside 500ms on a cold run, and a timeout here silently saves
+      -- the file unformatted.
+      timeout_ms = 3000,
       lsp_fallback = true,
     },
   },

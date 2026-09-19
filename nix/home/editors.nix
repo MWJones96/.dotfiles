@@ -9,7 +9,7 @@
 # machine starts from the version committed to the repo, then left alone so
 # `:Lazy` can update it locally. After a plugin update, copy it back:
 #   cp ~/.config/nvim/lazy-lock.json ~/.dotfiles/nvim/lazy-lock.json
-{ pkgs, lib, ... }:
+{ pkgs, lib, config, ... }:
 
 {
   home.file.".vimrc".source = ../../vim/.vimrc;
@@ -30,7 +30,28 @@
     fi
   '';
 
-  home.activation.nvchadSetup = lib.hm.dag.entryAfter [ "seedNvimLockfile" ] ''
+  # easy-dotnet.nvim's backend is a C# JSON-RPC server shipped as a dotnet
+  # global tool, so neither lazy.nvim nor nixpkgs can supply it. Installing it
+  # here keeps `install.sh` a single command on a new machine. It lands in
+  # ~/.dotnet/tools, already on home.sessionPath.
+  #
+  # Only installed if absent — `dotnet tool update --global EasyDotnet` is
+  # left to you, the same way lazy-lock.json is seeded once and then left
+  # alone. Deliberately non-fatal: it needs the network, and a switch
+  # shouldn't fail offline.
+  home.activation.easyDotnetTool = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    # Reuses the DOTNET_ROOT default.nix computes, so the SDK referenced here
+    # can't drift from the one on PATH.
+    export DOTNET_ROOT="${config.home.sessionVariables.DOTNET_ROOT}"
+    export PATH="$DOTNET_ROOT:$PATH"
+    export DOTNET_CLI_TELEMETRY_OPTOUT=1
+    if ! dotnet tool list --global 2>/dev/null | grep -qi '^easydotnet '; then
+      $DRY_RUN_CMD dotnet tool install --global EasyDotnet ||
+        echo "warning: could not install the EasyDotnet tool (easy-dotnet.nvim's backend); run 'dotnet tool install --global EasyDotnet' once online"
+    fi
+  '';
+
+  home.activation.nvchadSetup = lib.hm.dag.entryAfter [ "seedNvimLockfile" "easyDotnetTool" ] ''
     export PATH="${pkgs.git}/bin:$PATH"
     $DRY_RUN_CMD ${pkgs.neovim}/bin/nvim --headless \
       -c "lua require('lazy').restore()" \
