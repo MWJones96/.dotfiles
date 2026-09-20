@@ -22,8 +22,16 @@ return {
       require("mason-tool-installer").setup {
         ensure_installed = {
           "lua-language-server",
-          "python-lsp-server",
+          -- basedpyright over python-lsp-server: pylsp needs a separate
+          -- plugin installed per feature and has no inlay hints. Kept here
+          -- rather than in packages.nix so it tracks the ruff below, which
+          -- has to come from Mason -- nixpkgs' ruff loses to a stale
+          -- ~/.local/bin/ruff on PATH, Mason's bin dir doesn't.
+          "basedpyright",
           "ruff",
+          -- What nvim-dap-python runs as its adapter, the same way codelldb
+          -- below backs Rust and C++.
+          "debugpy",
           "stylua",
           "codelldb",
           "clangd",

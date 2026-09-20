@@ -214,3 +214,15 @@ nvim (NvChad should look and behave the same).
   `nix/home/editors.nix` during activation, so only Roslyn is deferred.
   `dotnet-easydotnet roslyn update` refreshes it later; `:checkhealth
   easy-dotnet` reports what's missing.
+- **Python tests need the interpreter to have pytest.** neotest asks the
+  project's interpreter which runner to use, and falls back to `unittest`
+  when it can't import pytest — under which plain `def test_*` functions
+  outside a `TestCase` aren't collected, so the file looks empty rather than
+  broken. A bare `uv venv` with nothing synced does exactly this. `uv sync`
+  (or `uv pip install pytest`) fixes it. `<leader>rv` picks a different
+  interpreter if the wrong one was found.
+- **`~/.local/bin/ruff` shadows the Nix one.** `home.sessionPath` puts
+  `~/.local/bin` ahead of the Nix profile, so a stale ruff left there by pipx
+  wins on the command line (0.9.6 vs the current release, at the time of
+  writing). It doesn't affect nvim — Mason's ruff is ahead of both there —
+  but `rm ~/.local/bin/ruff` makes the shell agree with the editor.

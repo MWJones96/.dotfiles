@@ -21,8 +21,9 @@ with pkgs; [
   rustfmt
   cargo-nextest
 
-  # python-lsp-server (Mason) needs an actual interpreter to run at all —
-  # was silently relying on whatever Python happens to be on the system.
+  # basedpyright (Mason) is a node app, but it still needs a real interpreter
+  # to resolve imports and stdlib types against, and it's what neotest and
+  # nvim-dap-python fall back to for a project with no .venv.
   python3
   ruff
   uv
