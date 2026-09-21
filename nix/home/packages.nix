@@ -31,6 +31,20 @@ with pkgs; [
   # clangd (Mason) is LSP-only; these are what actually build/debug the code.
   clang
   cmake
+  # cmake-tools.nvim generates with -G Ninja. CMake's default here is Unix
+  # Makefiles, whose dependency scanning is what makes an incremental rebuild
+  # slower than it needs to be.
+  ninja
+  # clang-format, for conform's c/cpp entry -- nothing provided it before, so
+  # those buffers silently fell through to the LSP formatter. Also brings
+  # clang-tidy as a standalone binary; clangd embeds its own copy for
+  # --clang-tidy, but the CLI is what a pre-commit hook or CI would call.
+  clang-tools
+  # Produces compile_commands.json for projects that build with plain make.
+  # CMake emits one itself, so this is only for the ones that don't -- without
+  # it clangd guesses flags per file and every non-trivial #include goes
+  # unresolved. Usage: `bear -- make`.
+  bear
 
   # Same deal for C#: Roslyn (which easy-dotnet.nvim fetches as a dotnet
   # global tool) doesn't build anything, and it needs a real SDK to run on

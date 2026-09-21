@@ -221,6 +221,16 @@ nvim (NvChad should look and behave the same).
   broken. A bare `uv venv` with nothing synced does exactly this. `uv sync`
   (or `uv pip install pytest`) fixes it. `<leader>rv` picks a different
   interpreter if the wrong one was found.
+- **C needs a `compile_commands.json` before clangd is any use.** Without one
+  it guesses flags per file, so cross-file jump-to-definition and most
+  diagnostics quietly don't work. In a CMake project `<leader>rg`
+  (`:CMakeGenerate`) writes it and symlinks it to the project root
+  automatically. For a plain Makefile project there's no generator, so run
+  `bear -- make` once instead.
+- **The first `<leader>rb` in a CMake project asks which target to build.**
+  So does `<leader>rt` for tests. That's cmake-tools prompting, not an error;
+  `<leader>rs` and `<leader>rS` set the build and launch targets so it stops
+  asking.
 - **`~/.local/bin/ruff` shadows the Nix one.** `home.sessionPath` puts
   `~/.local/bin` ahead of the Nix profile, so a stale ruff left there by pipx
   wins on the command line (0.9.6 vs the current release, at the time of

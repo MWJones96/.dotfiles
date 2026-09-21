@@ -34,6 +34,8 @@ return {
           "debugpy",
           "stylua",
           "codelldb",
+          -- Enabled in nvim-lspconfig.lua. It was installed here long before
+          -- anything turned it on.
           "clangd",
           "rust-analyzer",
         },

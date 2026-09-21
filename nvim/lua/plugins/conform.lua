@@ -8,6 +8,11 @@ return {
       html = { "prettier" },
       rust = { "rustfmt" },
       cs = { "csharpier" },
+      -- clang-format comes from clang-tools in packages.nix. It picks up a
+      -- project's .clang-format on its own; --fallback-style=llvm on clangd
+      -- keeps the two agreeing when there isn't one.
+      c = { "clang_format" },
+      cpp = { "clang_format" },
       -- fix lint issues, sort imports, then format — ruff's own recommended order
       python = { "ruff_fix", "ruff_organize_imports", "ruff_format" },
     },

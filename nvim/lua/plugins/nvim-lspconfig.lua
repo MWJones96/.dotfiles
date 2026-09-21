@@ -19,6 +19,37 @@ return {
       html = {},
       cssls = {},
 
+      -- Mason has been installing clangd all along, but nothing ever called
+      -- vim.lsp.enable on it, so C and C++ buffers had no LSP at all. Most of
+      -- clangd's behaviour is argv rather than settings, which is why this one
+      -- overrides `cmd` instead of passing a settings table.
+      clangd = {
+        cmd = {
+          "clangd",
+          -- Index the whole project in the background, not just open files:
+          -- without it, workspace symbols and find-references only ever see
+          -- the translation units you've already opened.
+          "--background-index",
+          -- clangd embeds clang-tidy, so this needs no separate binary; it is
+          -- what turns the LSP from a navigator into a linter.
+          "--clang-tidy",
+          -- Insert the header the symbol actually comes from on completion,
+          -- rather than whichever one happens to re-export it.
+          "--header-insertion=iwyu",
+          "--completion-style=detailed",
+          "--function-arg-placeholders",
+          -- Without a fallback, a file clangd has no compile command for gets
+          -- no formatting style at all.
+          "--fallback-style=llvm",
+          "--pch-storage=memory",
+        },
+        init_options = {
+          usePlaceholders = true,
+          completeUnimported = true,
+          clangdFileStatus = true,
+        },
+      },
+
       -- Python is split across two servers, which is the supported way to run
       -- both: basedpyright does types, completion and navigation, ruff does
       -- lint diagnostics and fixes. basedpyright replaced python-lsp-server
