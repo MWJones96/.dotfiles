@@ -227,6 +227,16 @@ nvim (NvChad should look and behave the same).
   (`:CMakeGenerate`) writes it and symlinks it to the project root
   automatically. For a plain Makefile project there's no generator, so run
   `bear -- make` once instead.
+- **C++ tests run through ctest, not neotest.** neotest-gtest is the only
+  GoogleTest adapter and it is broken on Neovim 0.11+: it calls
+  `iter_matches(..., { all = false })`, an API removed in 0.11, so every
+  discovery throws. `<leader>rr` and `<leader>rf` instead shell out to
+  `ctest -R` for the test or suite under the cursor. Both need the project to
+  register cases with `gtest_discover_tests()` -- a single `add_test` for the
+  whole binary gives ctest nothing per-test to filter on -- and they need a
+  **build** first, not just a configure, because that is when
+  `gtest_discover_tests` enumerates them. Before that ctest exits 0 saying
+  "No tests were found".
 - **The first `<leader>rb` in a CMake project asks which target to build.**
   So does `<leader>rt` for tests. That's cmake-tools prompting, not an error;
   `<leader>rs` and `<leader>rS` set the build and launch targets so it stops

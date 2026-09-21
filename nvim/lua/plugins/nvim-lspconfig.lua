@@ -37,6 +37,10 @@ return {
           -- rather than whichever one happens to re-export it.
           "--header-insertion=iwyu",
           "--completion-style=detailed",
+          -- C++ only in practice: completes a symbol sitting in a namespace
+          -- you haven't qualified or `using`-ed yet, and adds the qualifier.
+          -- C has no namespaces, so it costs those buffers nothing.
+          "--all-scopes-completion",
           "--function-arg-placeholders",
           -- Without a fallback, a file clangd has no compile command for gets
           -- no formatting style at all.
