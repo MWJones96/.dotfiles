@@ -45,6 +45,7 @@ in
     ./editors.nix
     ./alacritty.nix
     ./direnv.nix
+    ./claude.nix
   ];
 
   programs.home-manager.enable = true;
