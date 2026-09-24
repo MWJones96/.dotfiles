@@ -86,6 +86,7 @@ with pkgs; [
   kubelogin
   kubernetes-helm
   kind
+  tfenv
   # Client only: the daemon is Docker Desktop's, and the `compose`/`buildx`
   # subcommands come from Docker.app via ~/.docker/cli-plugins, so they keep
   # working regardless of where the `docker` binary itself comes from.
@@ -102,6 +103,7 @@ with pkgs; [
   stow
   hatch
   pipx
+  claude-code
 
   oh-my-posh
   fzf
@@ -163,8 +165,6 @@ with pkgs; [
   # picked up via fontconfig.
   nerd-fonts.jetbrains-mono
 ]
-# On macOS, Alacritty comes from the Homebrew cask (nix/hosts/darwin.nix) so
-# it's a proper .app in Applications/Spotlight — adding nixpkgs' build here
-# too would just be a redundant CLI-only duplicate. Linux has no such cask,
-# so it comes straight from nixpkgs there.
+# On macOS, Alacritty is in nix/hosts/darwin.nix's environment.systemPackages
+# so it lands in /Applications/Nix Apps like the other GUI apps.
 ++ lib.optional pkgs.stdenv.hostPlatform.isLinux alacritty

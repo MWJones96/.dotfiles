@@ -32,6 +32,7 @@ in
 
   home.sessionVariables = {
     DOTNET_CLI_TELEMETRY_OPTOUT = "1";
+    TFENV_CONFIG_DIR = "$HOME/.config/tfenv";
     # Global dotnet tools are apphosts that find the runtime via DOTNET_ROOT.
     # nixpkgs' wrapper only exports it for `dotnet` itself, so without this
     # `dotnet-ef` (and every other global tool) dies with a "missing_runtime"

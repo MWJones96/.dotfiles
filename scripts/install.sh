@@ -128,15 +128,6 @@ retire_foreign_symlinks() {
     done
 }
 
-install_claude_code() {
-    if [ -x "$HOME/.local/bin/claude" ]; then
-        return
-    fi
-
-    print -P "%F{cyan}Installing Claude Code...%f"
-    curl -fsSL https://claude.ai/install.sh | bash
-}
-
 main() {
     local os arch
     os="$(detect_os)"
@@ -155,8 +146,6 @@ main() {
         nix --extra-experimental-features 'nix-command flakes' \
             run home-manager -- switch --flake "${DOTFILES_DIR}#${USERNAME}-${arch}-linux" -b hm-backup
     fi
-
-    install_claude_code
 
     print -P "%F{green}Done. Open a new shell (and tmux session) to pick everything up.%f"
 }

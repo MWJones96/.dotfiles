@@ -23,38 +23,53 @@
     home = "/Users/mxj";
   };
 
-  # GUI apps that aren't practical to get from nixpkgs, plus the handful of
-  # CLIs nixpkgs can't replace. Homebrew itself still does the actual install;
-  # this list is the only thing that's declarative.
-  #
-  # cleanup is deliberately "none" (the default): this machine already has a
-  # lot of brew formulae/casks installed outside this config, and "uninstall"
-  # or "zap" would remove anything not listed above on every switch. Only
-  # flip this once `casks`/`brews` actually enumerates everything you want
-  # kept — until then, this list is additive only.
+  nixpkgs.config.allowUnfree = true;
+
+  environment.systemPackages = with pkgs; [
+    alacritty
+    firefox
+    obsidian
+    slack
+    zoom-us
+  ];
+
   homebrew = {
     enable = true;
     onActivation = {
       autoUpdate = true;
-      cleanup = "none";
+      cleanup = "uninstall";
     };
     casks = [
-      "alacritty"
+      "claude"
+      "docker-desktop"
+      "keybase"
+      "twingate"
     ];
-    # tfenv is the one CLI here that nixpkgs can't sensibly replace: it exists
-    # to keep several Terraform versions side by side and pick one per project
-    # (~/.config/tfenv/version), which a single `terraform` in packages.nix
-    # can't do. It shims /opt/homebrew/bin/terraform, so the separate
-    # hashicorp/tap/terraform formula is redundant.
-    brews = [
-      "tfenv"
-    ];
+    masApps = {
+      "Microsoft Outlook" = 985367838;
+    };
   };
 
-  # Intentionally empty for now — add `defaults write`-style preferences here
-  # (system.defaults.dock, .finder, NSGlobalDomain, etc.) once you've decided
-  # which ones you actually want.
-  system.defaults = { };
+  system.defaults = {
+    NSGlobalDomain.AppleInterfaceStyleSwitchesAutomatically = true;
+    WindowManager.EnableTiledWindowMargins = false;
+    dock = {
+      wvous-br-corner = 14;
+      persistent-apps = [
+        "/Applications/Nix Apps/Firefox.app"
+        "/Applications/Nix Apps/Slack.app"
+        "/Applications/Microsoft Outlook.app"
+        "/Applications/Nix Apps/Alacritty.app"
+        "/Applications/Keybase.app"
+        "/Applications/Docker.app"
+        "/System/Applications/System Settings.app"
+        "/Applications/Claude.app"
+        "/Applications/Twingate.app"
+        "/Applications/Nix Apps/Obsidian.app"
+        "/Applications/Nix Apps/zoom.us.app"
+      ];
+    };
+  };
 
   # Lets nix-darwin patch /etc/zshrc so login shells pick up the nix profile.
   programs.zsh.enable = true;

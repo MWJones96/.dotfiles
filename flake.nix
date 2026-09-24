@@ -24,7 +24,10 @@
       # (still fully pure/reproducible) and let the caller pick the right one
       # via a `uname -m` lookup at the shell level. See README.md.
       mkHome = system: home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
         modules = [ ./nix/home/default.nix ];
       };
 
