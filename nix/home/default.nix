@@ -47,7 +47,6 @@ in
     ./alacritty.nix
     ./direnv.nix
     ./claude.nix
-    ./obsidian.nix
   ];
 
   programs.home-manager.enable = true;
