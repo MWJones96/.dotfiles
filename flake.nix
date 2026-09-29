@@ -31,11 +31,7 @@
         modules = [ ./nix/home/default.nix ];
       };
 
-      linuxSystems = [ "x86_64-linux" "aarch64-linux" ];
-    in
-    {
-      # `darwin-rebuild switch --flake .#macbook`
-      darwinConfigurations.macbook = nix-darwin.lib.darwinSystem {
+      mkDarwin = extraModules: nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
         modules = [
           ./nix/hosts/darwin.nix
@@ -48,8 +44,17 @@
             home-manager.backupFileExtension = "hm-backup";
             home-manager.users.${username} = import ./nix/home/default.nix;
           }
-        ];
+        ] ++ extraModules;
       };
+
+      linuxSystems = [ "x86_64-linux" "aarch64-linux" ];
+    in
+    {
+      # `darwin-rebuild switch --flake .#macbook`
+      darwinConfigurations.macbook = mkDarwin [ ];
+
+      # New machine only, run by scripts/install.sh. See nix/hosts/provisioning.nix.
+      darwinConfigurations.macbook-bootstrap = mkDarwin [ ./nix/hosts/provisioning.nix ];
 
       # `home-manager switch --flake .#mxj-x86_64-linux` or `.#mxj-aarch64-linux`
       # — README.md has the `uname -m` one-liner that picks the right one.

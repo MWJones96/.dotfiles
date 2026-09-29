@@ -33,12 +33,10 @@
     zoom-us
   ];
 
+  # onActivation lives in provisioning.nix - cleanup uninstalls anything undeclared,
+  # which is a bootstrap step, not something to repeat on every rebuild.
   homebrew = {
     enable = true;
-    onActivation = {
-      autoUpdate = true;
-      cleanup = "uninstall";
-    };
     casks = [
       "claude"
       "docker-desktop"
@@ -50,26 +48,7 @@
     };
   };
 
-  system.defaults = {
-    NSGlobalDomain.AppleInterfaceStyleSwitchesAutomatically = true;
-    WindowManager.EnableTiledWindowMargins = false;
-    dock = {
-      wvous-br-corner = 14;
-      persistent-apps = [
-        "/Applications/Nix Apps/Firefox.app"
-        "/Applications/Nix Apps/Slack.app"
-        "/Applications/Microsoft Outlook.app"
-        "/Applications/Nix Apps/Alacritty.app"
-        "/Applications/Keybase.app"
-        "/Applications/Docker.app"
-        "/System/Applications/System Settings.app"
-        "/Applications/Claude.app"
-        "/Applications/Twingate.app"
-        "/Applications/Nix Apps/Obsidian.app"
-        "/Applications/Nix Apps/zoom.us.app"
-      ];
-    };
-  };
+  # The Dock and system.defaults live in provisioning.nix, for the same reason.
 
   # Lets nix-darwin patch /etc/zshrc so login shells pick up the nix profile.
   programs.zsh.enable = true;
