@@ -1,4 +1,4 @@
-# Applied ONCE, by scripts/install.sh, via darwinConfigurations.macbook-bootstrap.
+# Applied ONCE, by scripts/bootstrap.sh, via darwinConfigurations.macbook-bootstrap.
 # Everyday rebuilds use .#macbook, which leaves this out.
 #
 # Nix activation is convergent: whatever a module declares is re-asserted on every
@@ -13,10 +13,22 @@
 { ... }:
 
 {
-  homebrew.onActivation = {
-    autoUpdate = true;
-    # Uninstalls any formula or cask not declared in nix/hosts/darwin.nix.
-    cleanup = "uninstall";
+  homebrew = {
+    enable = true;
+    onActivation = {
+      autoUpdate = true;
+      # Uninstalls any formula or cask not declared here.
+      cleanup = "uninstall";
+    };
+    casks = [
+      "claude"
+      "docker-desktop"
+      "keybase"
+      "twingate"
+    ];
+    masApps = {
+      "Microsoft Outlook" = 985367838;
+    };
   };
 
   system.defaults = {

@@ -33,22 +33,8 @@
     zoom-us
   ];
 
-  # onActivation lives in provisioning.nix - cleanup uninstalls anything undeclared,
-  # which is a bootstrap step, not something to repeat on every rebuild.
-  homebrew = {
-    enable = true;
-    casks = [
-      "claude"
-      "docker-desktop"
-      "keybase"
-      "twingate"
-    ];
-    masApps = {
-      "Microsoft Outlook" = 985367838;
-    };
-  };
-
-  # The Dock and system.defaults live in provisioning.nix, for the same reason.
+  # The Dock, system.defaults and Homebrew live in provisioning.nix: they install or
+  # reset things, which is a bootstrap step, not something to repeat on every rebuild.
 
   # Lets nix-darwin patch /etc/zshrc so login shells pick up the nix profile.
   programs.zsh.enable = true;

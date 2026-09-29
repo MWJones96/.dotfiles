@@ -32,7 +32,7 @@
 
   # easy-dotnet.nvim's backend is a C# JSON-RPC server shipped as a dotnet
   # global tool, so neither lazy.nvim nor nixpkgs can supply it. Installing it
-  # here keeps `install.sh` a single command on a new machine. It lands in
+  # here keeps `bootstrap.sh` a single command on a new machine. It lands in
   # ~/.dotnet/tools, already on home.sessionPath.
   #
   # Only installed if absent — `dotnet tool update --global EasyDotnet` is
@@ -52,13 +52,15 @@
   '';
 
   home.activation.nvchadSetup = lib.hm.dag.entryAfter [ "seedNvimLockfile" "easyDotnetTool" ] ''
-    export PATH="${pkgs.git}/bin:$PATH"
-    $DRY_RUN_CMD ${pkgs.neovim}/bin/nvim --headless \
-      -c "lua require('lazy').restore()" \
-      -c "lua require('lazy').load({ plugins = { 'ui', 'base46', 'nvim-treesitter' } })" \
-      -c "lua require('nvchad.mason').install_all()" \
-      -c "lua require('nvim-treesitter.install').update({ with_sync = true })" \
-      -c "lua require('base46').load_all_highlights()" \
-      -c "qa"
+    if [ ! -d "$HOME/.local/share/nvim/lazy" ]; then
+      export PATH="${pkgs.git}/bin:$PATH"
+      $DRY_RUN_CMD ${pkgs.neovim}/bin/nvim --headless \
+        -c "lua require('lazy').restore()" \
+        -c "lua require('lazy').load({ plugins = { 'ui', 'base46', 'nvim-treesitter' } })" \
+        -c "lua require('nvchad.mason').install_all()" \
+        -c "lua require('nvim-treesitter.install').update({ with_sync = true })" \
+        -c "lua require('base46').load_all_highlights()" \
+        -c "qa"
+    fi
   '';
 }

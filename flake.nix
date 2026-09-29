@@ -53,7 +53,7 @@
       # `darwin-rebuild switch --flake .#macbook`
       darwinConfigurations.macbook = mkDarwin [ ];
 
-      # New machine only, run by scripts/install.sh. See nix/hosts/provisioning.nix.
+      # New machine only, run by scripts/bootstrap.sh. See nix/hosts/provisioning.nix.
       darwinConfigurations.macbook-bootstrap = mkDarwin [ ./nix/hosts/provisioning.nix ];
 
       # `home-manager switch --flake .#mxj-x86_64-linux` or `.#mxj-aarch64-linux`

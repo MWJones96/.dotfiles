@@ -50,7 +50,7 @@ add_once() {
     verify_package_exists "$pkg"
     print -P "%F{magenta}Installing $pkg for this machine only (nothing written to the repo)...%f"
     nix --extra-experimental-features 'nix-command flakes' profile install "nixpkgs#$pkg"
-    print -P "%F{green}Done. This won't show up on a fresh machine, and refresh.sh/install.sh won't touch it.%f"
+    print -P "%F{green}Done. This won't show up on a fresh machine, and refresh.sh/bootstrap.sh won't touch it.%f"
 }
 
 add_permanent() {
@@ -78,12 +78,12 @@ add_permanent() {
     print -P "%F{green}Added. Review nix/home/packages.nix (it landed at the end of the%f"
     print -P "%F{green}list — feel free to move it into a themed section) before applying.%f"
 
-    if read -q "?Run refresh.sh now to apply it? [y/N] "; then
+    if read -q "?Run bootstrap.sh now to install it? [y/N] "; then
         echo
-        "$SCRIPT_DIR/refresh.sh"
+        "$SCRIPT_DIR/bootstrap.sh"
     else
         echo
-        print -P "%F{yellow}Skipped. Run ./refresh.sh whenever you're ready.%f"
+        print -P "%F{yellow}Skipped. Run ./bootstrap.sh whenever you're ready.%f"
     fi
 }
 

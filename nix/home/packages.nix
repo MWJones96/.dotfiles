@@ -1,4 +1,4 @@
-# Cross-platform CLI tools, replacing install.sh's brew/apt/dnf/pacman
+# Cross-platform CLI tools, replacing the old install.sh's brew/apt/dnf/pacman
 # branching and the rustup + cargo-binstall pipeline. Same package set on
 # macOS and every Linux distro.
 #

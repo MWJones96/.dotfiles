@@ -6,16 +6,17 @@ Nix-managed dotfiles and package set for macOS (via `nix-darwin`) and Linux
 ## Layout
 
 ```
-flake.nix                # outputs: darwinConfigurations.macbook,
+flake.nix                # outputs: darwinConfigurations.macbook{,-bootstrap},
                           # homeConfigurations.mxj-{x86_64,aarch64}-linux
 scripts/
-  install.sh               # single-command bootstrap (detects OS/arch)
-  refresh.sh               # everyday "apply my latest change" command
+  bootstrap.sh             # installs everything: Nix, programs, apps (detects OS/arch)
+  refresh.sh               # applies settings changes only, never installs anything
   add-package.sh           # add a package, permanently or as a one-off
   remove-package.sh        # counterpart to add-package.sh
 nix/
   hosts/
-    darwin.nix             # macOS system config: leftover Homebrew, nix-darwin settings
+    darwin.nix             # macOS system config: nix GUI apps, nix-darwin settings
+    provisioning.nix       # bootstrap only: Homebrew apps, Dock, system defaults
   home/
     default.nix            # shared home-manager config, imports the rest below
     packages.nix            # CLI tools installed on every machine, both OSs
@@ -33,7 +34,7 @@ gets placed and *what packages* come with it.
 
 ```bash
 git clone https://github.com/MWJones96/.dotfiles.git ~/.dotfiles
-~/.dotfiles/scripts/install.sh
+~/.dotfiles/scripts/bootstrap.sh
 ```
 
 That one command works on both macOS and Linux — it detects the OS and CPU
@@ -43,23 +44,28 @@ architecture from `uname` and runs the right thing. Concretely it:
 2. Enables flakes in `/etc/nix/nix.conf` if not already on (one-time, needs sudo).
 3. Moves aside any conflicting pre-existing dotfile (e.g. from an old manual
    setup) to `<file>.pre-nix-backup` rather than failing or deleting it.
-4. Runs `darwin-rebuild switch --flake .#macbook` on macOS, or
+4. Runs `darwin-rebuild switch --flake .#macbook-bootstrap` on macOS, or
    `home-manager switch --flake .#mxj-<arch>-linux -b hm-backup` on Linux.
+   On macOS the bootstrap output also installs the Homebrew and App Store
+   apps, uninstalls any Homebrew package not declared, and sets the Dock and
+   system defaults (`nix/hosts/provisioning.nix`).
 
-It's idempotent — safe to re-run any time, on a fresh machine or an
-already-set-up one. For everyday changes after the machine is already set up,
-use `refresh.sh` instead (see below) — same underlying switch, but skips
-`install.sh`'s one-time bootstrap checks (Nix install, enabling flakes,
-retiring foreign symlinks) for a faster, more obviously-named command.
+It's idempotent — safe to re-run any time. Re-run it whenever you add or
+remove a program. On an already-set-up Mac that also resets the Dock and the
+system defaults to what `provisioning.nix` declares.
+
+For everything else, use `refresh.sh` (see below). It applies settings only:
+if the config would add or remove a program, it stops and tells you to run
+`bootstrap.sh` instead.
 
 ### Doing it manually instead
 
-If you'd rather run the underlying commands yourself instead of `install.sh`:
+If you'd rather run the underlying commands yourself instead of `bootstrap.sh`:
 
 ```bash
 # macOS
 sudo nix --extra-experimental-features 'nix-command flakes' \
-  run nix-darwin -- switch --flake ~/.dotfiles#macbook
+  run nix-darwin -- switch --flake ~/.dotfiles#macbook-bootstrap
 
 # Linux — pick the attribute matching your CPU
 arch="$(uname -m | sed -e 's/x86_64/x86_64-linux/' -e 's/aarch64/aarch64-linux/' -e 's/arm64/aarch64-linux/')"
@@ -68,7 +74,7 @@ nix --extra-experimental-features 'nix-command flakes' \
 ```
 
 (This assumes Nix is already installed and flakes are already enabled —
-`install.sh` is what handles both of those for you on a truly fresh machine.)
+`bootstrap.sh` is what handles both of those for you on a truly fresh machine.)
 
 ## Changing a dotfile
 
@@ -111,10 +117,10 @@ Where to declare it depends on how widely you want it applied:
   Both verify the package name actually resolves in nixpkgs first (fast
   attribute lookup, catches a typo before it's committed or half-applied),
   edit [`nix/home/packages.nix`](nix/home/packages.nix), and offer to run
-  `refresh.sh` for you. (Equivalent to editing `packages.nix` by hand — the
+  `bootstrap.sh` for you. (Equivalent to editing `packages.nix` by hand — the
   scripts just add the existence check and save a step.) Removing doesn't
   immediately delete anything from `/nix/store` — it just takes the package
-  off this machine's `PATH` on the next `refresh.sh`; the files themselves
+  off this machine's `PATH` on the next `bootstrap.sh`; the files themselves
   get reclaimed whenever you next run a garbage-collection sweep
   (`nix-collect-garbage`), which is normal Nix behavior, not something these
   scripts need to manage.
@@ -125,56 +131,30 @@ Where to declare it depends on how widely you want it applied:
   ```
   Runs `nix profile install`/`remove nixpkgs#<package>` directly. This won't
   show up on a fresh machine (nothing in the repo declares it), and
-  `install.sh`/`refresh.sh`/`darwin-rebuild`/`home-manager switch` won't
+  `bootstrap.sh`/`refresh.sh`/`darwin-rebuild`/`home-manager switch` won't
   touch it either way.
 - **This machine/OS only, but still declarative and reproducible** — add it
   to the host-specific file instead, e.g.
   [`nix/hosts/darwin.nix`](nix/hosts/darwin.nix)'s `environment.systemPackages`
-  or `homebrew.casks` for something only this Mac should get. Right now
+  or [`nix/hosts/provisioning.nix`](nix/hosts/provisioning.nix)'s
+  `homebrew.casks` for something only this Mac should get. Right now
   there's one host per platform, so "host-specific" and "platform-specific"
   are the same thing — if a second Mac or Linux box ever needs to diverge
   from this one, that's the point to split `nix/hosts/` into one file per
   machine. The add/remove scripts don't cover this case — edit the file
   directly.
 
-A GUI app on macOS that isn't practical to get from nixpkgs (like Alacritty)
-goes in `nix/hosts/darwin.nix`'s `homebrew.casks` instead of `packages.nix` —
-Homebrew does the actual install, declared as code. `homebrew.onActivation.cleanup`
-is deliberately `"none"`, since this machine has plenty of Homebrew packages
-installed outside this config — flipping it to `"uninstall"`/`"zap"` would
-remove anything not explicitly listed here.
+A GUI app on macOS goes in `nix/hosts/darwin.nix`'s `environment.systemPackages`
+when nixpkgs has a macOS build of it, and lands in `/Applications/Nix Apps`.
+Otherwise it goes in `nix/hosts/provisioning.nix`'s `homebrew.casks` (or
+`masApps`, for the App Store).
 
-### What's deliberately still Homebrew
+### What's still Homebrew
 
-Everything nixpkgs can provide now comes from `packages.nix` — including the
-cloud/cluster tooling (`awscli2`, `azure-cli`, `kubectl`, `kubelogin`,
-`kubernetes-helm`, `kind`, `docker-client`) and the odds and ends that used to
-be `brew install`ed by hand (`yq-go`, `gnupg`, `stow`, `hatch`, `pipx`). Nix
-comes before `/opt/homebrew` on `PATH`, so these take over as soon as you
-switch, whether or not the old formula is still installed.
-
-What's left in Homebrew, and why:
-
-- **`alacritty`** (cask) — wanted as a real `.app` in Applications/Spotlight.
-- **`tfenv`** (formula) — its whole job is keeping several Terraform versions
-  side by side and selecting one per project via `~/.config/tfenv/version`.
-  A single `terraform` in `packages.nix` can't do that, so both stay off Nix.
-  `tfenv` shims `/opt/homebrew/bin/terraform`, which makes a separately
-  installed `terraform` formula redundant.
-
-Formulae predating this migration are now shadowed by their Nix equivalents.
-They're harmless but dead weight; to clear them out and let Homebrew
-garbage-collect their dependencies:
-
-```bash
-brew uninstall --ignore-dependencies awscli azure-cli curl docker eza gh \
-  gnupg hatch helm just kind kubelogin kubernetes-cli pcre pipx stow tmux \
-  unzip vim wget yq hashicorp/tap/terraform
-brew autoremove && brew cleanup
-```
-
-(`pcre` is in there because nothing installed depends on it any more; `git` is
-left out on purpose — Homebrew uses it internally.)
+Only the apps nixpkgs has no macOS build for: Claude Desktop, Docker Desktop,
+Keybase and Twingate. Microsoft Outlook comes from the App Store. Everything
+else, CLI tools and `tfenv` included, comes from Nix. `bootstrap.sh`
+uninstalls any Homebrew package not declared in `provisioning.nix`.
 
 ## Verifying a switch actually applied
 

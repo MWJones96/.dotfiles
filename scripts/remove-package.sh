@@ -56,15 +56,15 @@ remove_permanent() {
 
     print -P "%F{green}Removed from the repo.%f"
 
-    if read -q "?Run refresh.sh now to remove it from this machine's PATH too? [y/N] "; then
+    if read -q "?Run bootstrap.sh now to remove it from this machine's PATH too? [y/N] "; then
         echo
-        "$SCRIPT_DIR/refresh.sh"
+        "$SCRIPT_DIR/bootstrap.sh"
         print -P "%F{green}Done — no longer on PATH. The actual files stay in /nix/store, unreferenced,%f"
         print -P "%F{green}until you next run 'nix-collect-garbage' (or a similar GC sweep) — that's%f"
         print -P "%F{green}normal Nix behavior, not something this script needs to handle.%f"
     else
         echo
-        print -P "%F{yellow}Skipped. Removed from the repo either way — run ./refresh.sh whenever%f"
+        print -P "%F{yellow}Skipped. Removed from the repo either way — run ./bootstrap.sh whenever%f"
         print -P "%F{yellow}you want it off this machine's PATH; it just won't be on future fresh machines.%f"
     fi
 }
