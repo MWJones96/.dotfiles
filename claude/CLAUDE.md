@@ -2,6 +2,10 @@
 
 Seek permission before commenting.
 
+Keep comments to an absolute minimum. If a diff's comment lines approach its code lines, cut them.
+
+Explain **why**, not **how** — the code already says how. A comment that restates the line below it is noise. A comment that records a constraint, a trade-off, or the reason a value is the value it is, earns its place.
+
 Use chat replies, not code comments, to explain decisions to the user. Reserve comments for context that future readers of the code will need.
 
 For example, in this tool call, the explanation would be better sent in the user-facing reply than embedded as a code comment:
