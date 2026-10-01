@@ -1,8 +1,22 @@
 {
-  "theme": "auto",
   "model": "opus[1m]",
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh"
+  },
+  "extraKnownMarketplaces": {
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
+    }
+  },
+  "theme": "auto",
+  "enabledPlugins": {
+    "ponytail@ponytail": true
+  },
+  "env": {
+    "DISABLE_AUTOUPDATER": "1"
   }
 }

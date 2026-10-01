@@ -84,12 +84,11 @@ nix --extra-experimental-features 'nix-command flakes' \
 
 Edit the file in the repo: `zsh/.zshrc`, `tmux/tmux.conf`, `vim/.vimrc`,
 `nvim/**`, `alacritty/alacritty.toml`, `claude/CLAUDE.md`,
-`claude/statusline.sh`. They're symlinked straight to the repo, so a saved
+`claude/settings.json`, `claude/statusline.sh`. They're symlinked straight to the repo, so a saved
 edit is live straight away: open a new shell, run `tmux source ~/.config/tmux/tmux.conf`,
 or restart nvim. No `refresh.sh` needed, including for new files under `nvim/`.
 
-`refresh.sh` is only needed for changes to the `nix/` files themselves, or to
-`claude/settings.json`. This relies on the repo living at `~/.dotfiles`.
+`refresh.sh` is only needed for changes to the `nix/` files themselves. This relies on the repo living at `~/.dotfiles`.
 
 ## Adding or removing a program
 
