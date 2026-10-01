@@ -6,7 +6,7 @@ Nix-managed dotfiles and package set for macOS (via `nix-darwin`) and Linux
 ## Layout
 
 ```
-flake.nix                # outputs: darwinConfigurations.macbook{,-bootstrap},
+flake.nix                # outputs: darwinConfigurations.macbook{,-install,-bootstrap},
                           # homeConfigurations.mxj-{x86_64,aarch64}-linux
 scripts/
   bootstrap.sh             # installs everything: Nix, programs, apps (detects OS/arch)
@@ -16,7 +16,8 @@ scripts/
 nix/
   hosts/
     darwin.nix             # macOS system config: nix GUI apps, nix-darwin settings
-    provisioning.nix       # bootstrap only: Homebrew apps, Dock, system defaults
+    homebrew.nix           # Homebrew and App Store apps, installed by bootstrap.sh
+    provisioning.nix       # new machine only: Homebrew cleanup, Dock, system defaults
   home/
     default.nix            # shared home-manager config, imports the rest below
     packages.nix            # CLI tools installed on every machine, both OSs
@@ -44,15 +45,18 @@ architecture from `uname` and runs the right thing. Concretely it:
 2. Enables flakes in `/etc/nix/nix.conf` if not already on (one-time, needs sudo).
 3. Moves aside any conflicting pre-existing dotfile (e.g. from an old manual
    setup) to `<file>.pre-nix-backup` rather than failing or deleting it.
-4. Runs `darwin-rebuild switch --flake .#macbook-bootstrap` on macOS, or
+4. Runs `darwin-rebuild switch` on macOS, or
    `home-manager switch --flake .#mxj-<arch>-linux -b hm-backup` on Linux.
-   On macOS the bootstrap output also installs the Homebrew and App Store
-   apps, uninstalls any Homebrew package not declared, and sets the Dock and
-   system defaults (`nix/hosts/provisioning.nix`).
+   On macOS this also installs the Homebrew and App Store apps
+   (`nix/hosts/homebrew.nix`).
+
+On a new Mac it uses `.#macbook-bootstrap`, which additionally uninstalls any
+Homebrew package not declared and sets the Dock and system defaults
+(`nix/hosts/provisioning.nix`). On a Mac that already has nix-darwin it uses
+`.#macbook-install`, which leaves those alone.
 
 It's idempotent — safe to re-run any time. Re-run it whenever you add or
-remove a program. On an already-set-up Mac that also resets the Dock and the
-system defaults to what `provisioning.nix` declares.
+remove a program.
 
 For everything else, use `refresh.sh` (see below). It applies settings only:
 if the config would add or remove a program, it stops and tells you to run
@@ -118,7 +122,7 @@ Where to declare it depends on how widely you want it applied:
 - **This machine/OS only, but still declarative and reproducible** — add it
   to the host-specific file instead, e.g.
   [`nix/hosts/darwin.nix`](nix/hosts/darwin.nix)'s `environment.systemPackages`
-  or [`nix/hosts/provisioning.nix`](nix/hosts/provisioning.nix)'s
+  or [`nix/hosts/homebrew.nix`](nix/hosts/homebrew.nix)'s
   `homebrew.casks` for something only this Mac should get. Right now
   there's one host per platform, so "host-specific" and "platform-specific"
   are the same thing — if a second Mac or Linux box ever needs to diverge
@@ -128,7 +132,7 @@ Where to declare it depends on how widely you want it applied:
 
 A GUI app on macOS goes in `nix/hosts/darwin.nix`'s `environment.systemPackages`
 when nixpkgs has a macOS build of it, and lands in `/Applications/Nix Apps`.
-Otherwise it goes in `nix/hosts/provisioning.nix`'s `homebrew.casks` (or
+Otherwise it goes in `nix/hosts/homebrew.nix`'s `homebrew.casks` (or
 `masApps`, for the App Store).
 
 ### What's still Homebrew
@@ -136,7 +140,7 @@ Otherwise it goes in `nix/hosts/provisioning.nix`'s `homebrew.casks` (or
 Only the apps nixpkgs has no macOS build for: Claude Desktop, Docker Desktop,
 Keybase and Twingate. Microsoft Outlook comes from the App Store. Everything
 else, CLI tools and `tfenv` included, comes from Nix. `bootstrap.sh`
-uninstalls any Homebrew package not declared in `provisioning.nix`.
+uninstalls any Homebrew package not declared in `homebrew.nix`, on a new Mac only.
 
 ## Verifying a switch actually applied
 

@@ -138,11 +138,11 @@ main() {
     retire_foreign_symlinks
 
     if [[ "$os" == "darwin" ]]; then
-        # The bootstrap output adds nix/hosts/provisioning.nix; rebuild with .#macbook
-        # from here on, which leaves the Dock and system settings alone.
-        print -P "%F{magenta}Switching macOS to the Nix config (darwinConfigurations.macbook-bootstrap)...%f"
+        local target=macbook-bootstrap
+        [ -e /run/current-system ] && target=macbook-install
+        print -P "%F{magenta}Switching macOS to the Nix config (darwinConfigurations.${target})...%f"
         sudo -H nix --extra-experimental-features 'nix-command flakes' \
-            run nix-darwin -- switch --flake "${DOTFILES_DIR}#macbook-bootstrap"
+            run nix-darwin -- switch --flake "${DOTFILES_DIR}#${target}"
     else
         print -P "%F{magenta}Switching this Linux user to the Nix config (${arch}-linux)...%f"
         nix --extra-experimental-features 'nix-command flakes' \

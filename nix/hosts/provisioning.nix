@@ -13,22 +13,10 @@
 { ... }:
 
 {
-  homebrew = {
-    enable = true;
-    onActivation = {
-      autoUpdate = true;
-      # Uninstalls any formula or cask not declared here.
-      cleanup = "uninstall";
-    };
-    casks = [
-      "claude"
-      "docker-desktop"
-      "keybase"
-      "twingate"
-    ];
-    masApps = {
-      "Microsoft Outlook" = 985367838;
-    };
+  homebrew.onActivation = {
+    autoUpdate = true;
+    # Uninstalls any formula or cask not declared in homebrew.nix.
+    cleanup = "uninstall";
   };
 
   system.defaults = {

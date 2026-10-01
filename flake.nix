@@ -53,8 +53,13 @@
       # `darwin-rebuild switch --flake .#macbook`
       darwinConfigurations.macbook = mkDarwin [ ];
 
-      # New machine only, run by scripts/bootstrap.sh. See nix/hosts/provisioning.nix.
-      darwinConfigurations.macbook-bootstrap = mkDarwin [ ./nix/hosts/provisioning.nix ];
+      # Run by scripts/bootstrap.sh: -install on a machine that already has nix-darwin,
+      # -bootstrap on a new one. See nix/hosts/provisioning.nix.
+      darwinConfigurations.macbook-install = mkDarwin [ ./nix/hosts/homebrew.nix ];
+      darwinConfigurations.macbook-bootstrap = mkDarwin [
+        ./nix/hosts/homebrew.nix
+        ./nix/hosts/provisioning.nix
+      ];
 
       # `home-manager switch --flake .#mxj-x86_64-linux` or `.#mxj-aarch64-linux`
       # — README.md has the `uname -m` one-liner that picks the right one.
