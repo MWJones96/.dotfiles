@@ -3,32 +3,14 @@
 # and install neovim itself, then replay the same headless bootstrap that
 # install.sh's install_nv_chad used to run.
 #
-# lazy-lock.json is deliberately NOT symlinked into the Nix store like the
-# rest of the config: lazy.nvim rewrites it whenever plugin versions change,
-# and a store path is read-only. Instead it's copied once (seeded) so a fresh
-# machine starts from the version committed to the repo, then left alone so
-# `:Lazy` can update it locally. After a plugin update, copy it back:
-#   cp ~/.config/nvim/lazy-lock.json ~/.dotfiles/nvim/lazy-lock.json
+# Config files link straight to the repo rather than the Nix store, so an edit
+# is live without a rebuild, and lazy.nvim writes lazy-lock.json back into the
+# repo itself.
 { pkgs, lib, config, ... }:
 
 {
-  home.file.".vimrc".source = ../../vim/.vimrc;
-
-  xdg.configFile = {
-    "nvim/init.lua".source = ../../nvim/init.lua;
-    "nvim/.stylua.toml".source = ../../nvim/.stylua.toml;
-    "nvim/lua" = {
-      source = ../../nvim/lua;
-      recursive = true;
-    };
-  };
-
-  home.activation.seedNvimLockfile = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    target="$HOME/.config/nvim/lazy-lock.json"
-    if [ ! -e "$target" ]; then
-      $DRY_RUN_CMD install -m 0644 ${../../nvim/lazy-lock.json} "$target"
-    fi
-  '';
+  home.file.".vimrc".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/vim/.vimrc";
+  xdg.configFile."nvim".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/nvim";
 
   # easy-dotnet.nvim's backend is a C# JSON-RPC server shipped as a dotnet
   # global tool, so neither lazy.nvim nor nixpkgs can supply it. Installing it
@@ -51,7 +33,7 @@
     fi
   '';
 
-  home.activation.nvchadSetup = lib.hm.dag.entryAfter [ "seedNvimLockfile" "easyDotnetTool" ] ''
+  home.activation.nvchadSetup = lib.hm.dag.entryAfter [ "easyDotnetTool" ] ''
     if [ ! -d "$HOME/.local/share/nvim/lazy" ]; then
       export PATH="${pkgs.git}/bin:$PATH"
       $DRY_RUN_CMD ${pkgs.neovim}/bin/nvim --headless \

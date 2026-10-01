@@ -33,6 +33,10 @@
     zoom-us
   ];
 
+  # Zoom's updater can't write to the read-only nix copy, so it installs a second
+  # one in ~/Applications instead.
+  system.defaults.CustomSystemPreferences."/Library/Preferences/us.zoom.config".ZAutoUpdate = false;
+
   # The Dock, system.defaults and Homebrew live in provisioning.nix: they install or
   # reset things, which is a bootstrap step, not something to repeat on every rebuild.
 

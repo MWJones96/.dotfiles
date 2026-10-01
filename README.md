@@ -78,32 +78,14 @@ nix --extra-experimental-features 'nix-command flakes' \
 
 ## Changing a dotfile
 
-Edit the file directly — `zsh/.zshrc`, `tmux/tmux.conf`, `vim/.vimrc`,
-`nvim/**`, `alacritty/alacritty.toml`. These are read straight from the
-working tree, so a saved edit is immediately what the next switch will apply.
-No `.nix` file needs to change for a content-only edit.
+Edit the file in the repo: `zsh/.zshrc`, `tmux/tmux.conf`, `vim/.vimrc`,
+`nvim/**`, `alacritty/alacritty.toml`, `claude/CLAUDE.md`,
+`claude/statusline.sh`. They're symlinked straight to the repo, so a saved
+edit is live straight away: open a new shell, run `tmux source ~/.config/tmux/tmux.conf`,
+or restart nvim. No `refresh.sh` needed, including for new files under `nvim/`.
 
-Then apply it:
-
-```bash
-~/.dotfiles/scripts/refresh.sh
-```
-
-A shell/tmux/editor config change needs a new shell, tmux session, or app
-restart to actually show up — that's normal reload behavior, not a Nix thing.
-
-**One catch:** this only works instantly for files Nix already knows about.
-If you add a **brand-new file** (a new dotfile, a new `nix/home/*.nix`
-module), Nix won't see it until it's at least staged in git — flake
-evaluation only looks at git-tracked paths, not the raw filesystem:
-
-```bash
-git add path/to/new-file
-~/.dotfiles/scripts/refresh.sh
-```
-
-An edit to an *already-tracked* file needs no git step at all — only brand
-new files do.
+`refresh.sh` is only needed for changes to the `nix/` files themselves, or to
+`claude/settings.json`. This relies on the repo living at `~/.dotfiles`.
 
 ## Adding or removing a program
 
@@ -171,11 +153,6 @@ nvim (NvChad should look and behave the same).
 
 ## Known caveats
 
-- **`nvim/lazy-lock.json` is intentionally not Nix-managed.** It's seeded
-  once from the repo on a fresh machine, then left writable so `:Lazy` can
-  update it locally (a Nix store path is read-only, and lazy.nvim needs to
-  rewrite this file when plugin versions change). After updating plugins,
-  copy it back: `cp ~/.config/nvim/lazy-lock.json ~/.dotfiles/nvim/lazy-lock.json`.
 - **NvChad's headless bootstrap can fail on a truly cold plugin cache**
   (a brand new machine that's never run nvim before): `require('lazy').restore()`
   downloads plugins to disk, but the following `lazy.load({...})` call only

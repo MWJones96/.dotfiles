@@ -1,9 +1,9 @@
-{ pkgs, lib, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   home.file = {
-    ".claude/CLAUDE.md".source = ../../claude/CLAUDE.md;
-    ".claude/statusline.sh".source = ../../claude/statusline.sh;
+    ".claude/CLAUDE.md".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/claude/CLAUDE.md";
+    ".claude/statusline.sh".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.dotfiles/claude/statusline.sh";
   };
 
   home.activation.mergeClaudeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
