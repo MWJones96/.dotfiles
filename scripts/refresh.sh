@@ -58,7 +58,7 @@ main() {
             "/etc/profiles/per-user/$USERNAME"
 
         print -P "%F{magenta}Refreshing macOS from the Nix config (darwinConfigurations.macbook)...%f"
-        sudo nix --extra-experimental-features 'nix-command flakes' \
+        sudo -H nix --extra-experimental-features 'nix-command flakes' \
             run nix-darwin -- switch --flake "${DOTFILES_DIR}#macbook"
     else
         refuse_program_changes "homeConfigurations.${USERNAME}-${arch}-linux.config.home.path" \
