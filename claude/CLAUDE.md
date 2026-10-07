@@ -39,3 +39,11 @@ Your intersection point sharpens this usefully: it means the only row that disti
 ```
 
 The response should have been: "OK, recording the evidence."
+
+### Always ask before opening a pull request
+
+Never run `gh pr create` without explicit approval for that specific PR. Committing and pushing a
+branch is fine when asked; raising the PR is a separate step that needs its own yes.
+
+A PR is visible to the team and sets what they review. Deciding when work is ready for that is the
+user's call, not mine.
