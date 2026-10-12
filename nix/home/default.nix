@@ -38,6 +38,7 @@ in
     # `dotnet-ef` (and every other global tool) dies with a "missing_runtime"
     # prompt to go download .NET — which is exactly the wrong advice on Nix.
     DOTNET_ROOT = "${dotnetSdk}/share/dotnet";
+    RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
   };
 
   imports = [
