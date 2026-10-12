@@ -1,19 +1,28 @@
 return {
   'mfussenegger/nvim-dap',
+  dependencies = { "theHamsta/nvim-dap-virtual-text" },
   config = function()
     local dap, dapui = require("dap"), require("dapui")
+    local function close_ui()
+      dapui.close()
+      require("nvim-tree.api").tree.resize()
+    end
     dap.listeners.before.attach.dapui_config = function()
       dapui.open()
     end
     dap.listeners.before.launch.dapui_config = function()
       dapui.open()
     end
-    dap.listeners.before.event_terminated.dapui_config = function()
-      dapui.close()
-    end
-    dap.listeners.before.event_exited.dapui_config = function()
-      dapui.close()
-    end
+    dap.listeners.before.event_terminated.dapui_config = close_ui
+    dap.listeners.before.event_exited.dapui_config = close_ui
+
+    require("nvim-dap-virtual-text").setup {}
+
+    vim.fn.sign_define("DapBreakpoint", { text = "●", texthl = "DiagnosticError" })
+    vim.fn.sign_define("DapBreakpointCondition", { text = "◆", texthl = "DiagnosticWarn" })
+    vim.fn.sign_define("DapBreakpointRejected", { text = "○", texthl = "DiagnosticHint" })
+    vim.fn.sign_define("DapLogPoint", { text = "◉", texthl = "DiagnosticInfo" })
+    vim.fn.sign_define("DapStopped", { text = "→", texthl = "DiagnosticOk", linehl = "Visual" })
 
     -- C/C++ debugging via the same Mason-installed codelldb rustaceanvim
     -- already uses for Rust — registered directly on nvim-dap (rather than

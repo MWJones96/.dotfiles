@@ -94,6 +94,13 @@ local function keymaps(buf)
   end, opts "toggle inlay hints")
 end
 
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "python",
+  callback = function(args)
+    keymaps(args.buf)
+  end,
+})
+
 return {
   {
     "nvim-neotest/neotest",
@@ -105,32 +112,18 @@ return {
       "nvim-neotest/neotest-python",
       "mfussenegger/nvim-dap",
     },
-    config = function()
-      require("neotest").setup {
-        adapters = {
-          require "neotest-python" {
-            python = venv_python,
-            -- Stepping stops at the first line of your own code by default,
-            -- which makes debugging anything that fails inside a library
-            -- (pydantic validators, fastapi dependencies) a dead end.
-            dap = { justMyCode = false },
-          },
-        },
-      }
-
-      -- lazy.nvim re-emits FileType after loading an `ft`-gated plugin, so this
-      -- still fires for the buffer that triggered the load.
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "python",
-        callback = function(args)
-          keymaps(args.buf)
-        end,
-      })
-      -- ...but not when something else (a `require`, or :Neotest) pulled the
-      -- plugin in first, in which case the event has already been and gone.
-      if vim.bo.filetype == "python" then
-        keymaps(0)
-      end
+    opts = function(_, opts)
+      opts.adapters = opts.adapters or {}
+      table.insert(
+        opts.adapters,
+        require "neotest-python" {
+          python = venv_python,
+          -- Stepping stops at the first line of your own code by default,
+          -- which makes debugging anything that fails inside a library
+          -- (pydantic validators, fastapi dependencies) a dead end.
+          dap = { justMyCode = false },
+        }
+      )
     end,
   },
 
