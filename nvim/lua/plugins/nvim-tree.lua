@@ -1,5 +1,20 @@
 return {
   "nvim-tree/nvim-tree.lua",
+  config = function(_, opts)
+    require("nvim-tree").setup(opts)
+
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+      local diagnostics = vim.diagnostic.get(buf)
+      if #diagnostics > 0 then
+        vim.api.nvim_exec_autocmds("DiagnosticChanged", {
+          group = "NvimTree",
+          buffer = buf,
+          modeline = false,
+          data = { diagnostics = diagnostics },
+        })
+      end
+    end
+  end,
   opts = function(_, opts)
     opts.renderer.special_files = {}
 
@@ -22,6 +37,8 @@ return {
       diagnostics = {
         enable = true,
         show_on_dirs = true,
+        show_on_open_dirs = false,
+        severity = { min = vim.diagnostic.severity.WARN },
       },
 
       renderer = {
@@ -29,7 +46,7 @@ return {
         symlink_destination = false,
         indent_width = 2,
         highlight_git = "all",
-        highlight_diagnostics = "name",
+        highlight_diagnostics = "none",
 
         decorators = {
           "Git",
@@ -40,7 +57,6 @@ return {
           "Diagnostics",
           "Copied",
           "Cut",
-          require "configs.diagcount",
         },
 
         root_folder_label = function(path)
@@ -61,6 +77,7 @@ return {
 
         icons = {
           git_placement = "right_align",
+          diagnostics_placement = "signcolumn",
           padding = {
             icon = " ",
           },
@@ -72,7 +89,7 @@ return {
 
           show = {
             folder_arrow = true,
-            diagnostics = false,
+            diagnostics = true,
             bookmarks = false,
           },
 
