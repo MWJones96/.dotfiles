@@ -137,8 +137,9 @@ Otherwise it goes in `nix/hosts/homebrew.nix`'s `homebrew.casks` (or
 ### What's still Homebrew
 
 Only the apps nixpkgs has no macOS build for: Claude Desktop, Docker Desktop,
-Keybase and Twingate. Microsoft Outlook comes from the App Store. Everything
-else, CLI tools and `tfenv` included, comes from Nix. `bootstrap.sh`
+Keybase and Twingate. Plus 1Password, which has one but refuses to run from
+anywhere but `/Applications`. Microsoft Outlook comes from the App Store.
+Everything else, CLI tools and `tfenv` included, comes from Nix. `bootstrap.sh`
 uninstalls any Homebrew package not declared in `homebrew.nix`, on a new Mac only.
 
 ## Verifying a switch actually applied

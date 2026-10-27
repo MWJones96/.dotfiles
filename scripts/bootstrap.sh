@@ -128,6 +128,20 @@ retire_foreign_symlinks() {
     done
 }
 
+install_1password_linux() {
+    local arch="$1"
+    command -v 1password &>/dev/null && return
+
+    print -P "%F{cyan}Installing 1Password to /opt/1Password...%f"
+    local tmp
+    tmp="$(mktemp -d)"
+    curl -fsSL "https://downloads.1password.com/linux/tar/stable/${arch}/1password-latest.tar.gz" | tar xz -C "$tmp"
+    sudo rm -rf /opt/1Password
+    sudo mv "$tmp"/1password-* /opt/1Password
+    sudo /opt/1Password/after-install.sh
+    rm -rf "$tmp"
+}
+
 main() {
     local os arch
     os="$(detect_os)"
@@ -144,6 +158,7 @@ main() {
         sudo -H nix --extra-experimental-features 'nix-command flakes' \
             run nix-darwin -- switch --flake "${DOTFILES_DIR}#${target}"
     else
+        install_1password_linux "$arch"
         print -P "%F{magenta}Switching this Linux user to the Nix config (${arch}-linux)...%f"
         nix --extra-experimental-features 'nix-command flakes' \
             run home-manager -- switch --flake "${DOTFILES_DIR}#${USERNAME}-${arch}-linux" -b hm-backup

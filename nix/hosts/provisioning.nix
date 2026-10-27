@@ -35,6 +35,7 @@
         "/Applications/Claude.app"
         "/Applications/Twingate.app"
         "/Applications/Nix Apps/Obsidian.app"
+        "/Applications/1Password.app"
         "/Applications/Nix Apps/zoom.us.app"
       ];
     };

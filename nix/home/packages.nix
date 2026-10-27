@@ -165,6 +165,9 @@ with pkgs; [
   # picked up via fontconfig.
   nerd-fonts.jetbrains-mono
 ]
-# On macOS, Alacritty is in nix/hosts/darwin.nix's environment.systemPackages
-# so it lands in /Applications/Nix Apps like the other GUI apps.
-++ lib.optional pkgs.stdenv.hostPlatform.isLinux alacritty
+# On macOS, GUI apps are in nix/hosts/darwin.nix's environment.systemPackages
+# (or homebrew.nix) so they land in /Applications.
+++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+  alacritty
+  obsidian
+]
