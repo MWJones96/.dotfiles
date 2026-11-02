@@ -47,4 +47,4 @@ if ! command -v 1password &>/dev/null; then
 fi
 
 nix --extra-experimental-features 'nix-command flakes' \
-    run home-manager -- switch --flake ".#mxj-${arch}-linux" -b hm-backup
+    run home-manager -- switch --impure --flake ".#${arch}-linux" -b hm-backup

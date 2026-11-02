@@ -55,7 +55,7 @@ Homebrew instead (see [What goes where](#what-goes-where)).
 
 ```
 flake.nix                # outputs: darwinConfigurations.macbook{,-bootstrap},
-                         # homeConfigurations.mxj-{x86_64,aarch64}-linux
+                         # homeConfigurations.{x86_64,aarch64}-linux
 scripts/
   mac.sh                 # set up or update this Mac
   linux.sh               # set up or update this Linux machine
@@ -99,7 +99,7 @@ It is safe to re-run any time. Each run:
 3. On Linux, installs 1Password to `/opt/1Password` from the official tarball
    if it isn't already present.
 4. Switches to the config: `darwin-rebuild switch` on macOS, or
-   `home-manager switch --flake .#mxj-<arch>-linux -b hm-backup` on Linux. On
+   `home-manager switch --impure --flake .#<arch>-linux -b hm-backup` on Linux. On
    macOS this also installs the Homebrew and App Store apps
    (`nix/hosts/homebrew.nix`).
 
@@ -118,9 +118,8 @@ Treesitter parsers.
 - macOS on Apple silicon (`aarch64-darwin`)
 - Linux on `x86_64` or `aarch64`
 
-The username and home directory are fixed in the flake, the Nix modules and
-the scripts, so using this on an account with a different name means editing
-those first.
+The config applies to whichever account runs the script, so the account can
+have any name.
 
 ## Changing a dotfile
 

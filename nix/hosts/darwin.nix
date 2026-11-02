@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, username, ... }:
 
 {
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -13,14 +13,14 @@
 
   # Required by nix-darwin for any option (e.g. homebrew.enable) that still
   # applies per-user rather than system-wide.
-  system.primaryUser = "mxj";
+  system.primaryUser = username;
 
   # nix-darwin doesn't create/manage macOS user accounts, but home-manager's
   # darwin integration needs this declared to know the home directory —
   # without it, home.homeDirectory resolves to null and the build fails.
-  users.users.mxj = {
-    name = "mxj";
-    home = "/Users/mxj";
+  users.users.${username} = {
+    name = username;
+    home = "/Users/${username}";
   };
 
   nixpkgs.config.allowUnfree = true;

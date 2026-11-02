@@ -17,4 +17,4 @@ target=macbook
 [ -e /run/current-system ] || target=macbook-bootstrap
 
 sudo -H nix --extra-experimental-features 'nix-command flakes' \
-    run nix-darwin -- switch --flake ".#${target}"
+    run nix-darwin -- switch --impure --flake ".#${target}"

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, username, homeDirectory, ... }:
 
 let
   # Bound once here because it's needed in two places that must not drift:
@@ -6,8 +6,8 @@ let
   dotnetSdk = pkgs.dotnet-sdk_10;
 in
 {
-  home.username = "mxj";
-  home.homeDirectory = if pkgs.stdenv.hostPlatform.isDarwin then "/Users/mxj" else "/home/mxj";
+  home.username = username;
+  home.homeDirectory = homeDirectory;
   # Pinned once on first setup; do not bump casually — see home-manager docs.
   home.stateVersion = "24.11";
 
