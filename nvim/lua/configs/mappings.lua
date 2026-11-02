@@ -4,6 +4,7 @@ local map = vim.keymap.set
 
 map("n", ";", ":", { desc = "CMD enter command mode" })
 map("i", "jk", "<ESC>", { desc = "Exit insert mode" })
+map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, { desc = "LSP code action" })
 
 -- Nvim DAP
 map("n", "<Leader>dl", function() require("dap").step_into() end, { desc = "Debugger step into" })

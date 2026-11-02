@@ -14,7 +14,6 @@ local function keymaps(buf)
   end
 
   map("n", "K", rust("hover", "actions"), opts "hover actions")
-  map("n", "<leader>ca", rust "codeAction", opts "code action")
 
   map("n", "<leader>rr", function()
     neotest().run.run()

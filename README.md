@@ -210,6 +210,7 @@ Beyond NvChad's defaults:
 | `;` | Enter command mode |
 | `jk` (insert mode) | Escape |
 | Arrow keys | Show a reminder to use `h`/`j`/`k`/`l` instead of moving |
+| `<leader>ca` | Code actions, in a popup list |
 | `<leader>d…` | Debugger: `c` continue, `b` toggle breakpoint, `d` conditional breakpoint, `j` step over, `l` step into, `k` step out, `e` terminate, `r` run last, `h` inspect value, `u` toggle UI |
 | `F5`, `F9`, `F10`, `F11`, `F12` | Debugger: continue, toggle breakpoint, step over, step into, step out |
 | `<leader>r…` | Language-specific run, build and test commands, set per buffer for Rust, Python, C, C++ and C#. Lower case acts on the current item or target, upper case widens or resets it (for example `<leader>rt` runs the tests in the file, `<leader>rT` the whole suite) |
