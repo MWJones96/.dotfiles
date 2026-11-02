@@ -13,9 +13,8 @@ configuration files themselves (`.zshrc`, `tmux.conf`, the Neovim config and
 so on) stay as plain, hand-edited files in this repository. The Nix modules
 only decide where each file is placed and which packages come with it.
 
-Shell scripts in [`scripts/`](scripts) wrap the Nix commands: one to set up a
-new machine, one to apply settings changes, and a pair to add or remove
-packages.
+Two scripts in [`scripts/`](scripts), one per OS, set up a new machine and
+apply any later change to the Nix config.
 
 ## What's configured
 
@@ -40,7 +39,7 @@ every machine. Broadly:
   (`clang`, `clang-tools`, `cmake`, `ninja`, `bear`), .NET 10 SDK with
   `dotnet-ef` and `netcoredbg`, and Node.js 24 with Corepack.
 - **Cloud and containers**: AWS CLI, Azure CLI, `kubectl`, `kubelogin`, Helm,
-  `kind`, `tfenv` and the Docker client.
+  `kind` and `tfenv`, plus the Docker client on Linux.
 - **Command-line utilities**: `fzf`, `eza`, `bat`, `ripgrep`, `fd`, `bottom`,
   `zoxide`, `atuin`, `dua`, `tealdeer`, `jq`, `yq-go`, `delta`, `lazygit`, `gh`,
   `shellcheck`, `just` and `gnupg`.
@@ -49,24 +48,21 @@ every machine. Broadly:
 - **Other**: `claude-code`, `stow`, a small TeX Live set with `latexmk`, and the
   JetBrainsMono Nerd Font.
 
-On Linux it also installs Alacritty and Obsidian. On macOS those come from
-[`nix/hosts/darwin.nix`](nix/hosts/darwin.nix) instead, along with Firefox,
-Slack and Zoom.
+On Linux it also installs Alacritty and Obsidian. On macOS, GUI apps come from
+Homebrew instead (see [What goes where](#what-goes-where)).
 
 ## Layout
 
 ```
-flake.nix                # outputs: darwinConfigurations.macbook{,-install,-bootstrap},
+flake.nix                # outputs: darwinConfigurations.macbook{,-bootstrap},
                          # homeConfigurations.mxj-{x86_64,aarch64}-linux
 scripts/
-  bootstrap.sh           # installs everything: Nix, programs, apps (detects OS/arch)
-  refresh.sh             # applies settings changes only, never installs anything
-  add-package.sh         # add a package, permanently or as a one-off
-  remove-package.sh      # counterpart to add-package.sh
+  mac.sh                 # set up or update this Mac
+  linux.sh               # set up or update this Linux machine
 nix/
   hosts/
-    darwin.nix           # macOS system config: nix GUI apps, nix-darwin settings
-    homebrew.nix         # Homebrew and App Store apps, installed by bootstrap.sh
+    darwin.nix           # macOS system config: Alacritty, nix-darwin settings
+    homebrew.nix         # Homebrew casks and App Store apps
     provisioning.nix     # new machine only: Homebrew cleanup, Dock, system defaults
   home/
     default.nix          # shared home-manager config, imports the rest below
@@ -83,50 +79,39 @@ The files in `zsh/`, `tmux/`, `vim/`, `nvim/`, `alacritty/` and `claude/` are
 the real configs, referenced by the matching `nix/home/*.nix` module. Editing
 dotfile *content* never touches the `.nix` files.
 
-## First-time setup on a new machine
+## Setup and updates
 
 ```bash
 git clone https://github.com/MWJones96/.dotfiles.git ~/.dotfiles
-~/.dotfiles/scripts/bootstrap.sh
+~/.dotfiles/scripts/mac.sh     # or scripts/linux.sh
 ```
 
 The repository must live at `~/.dotfiles`: the Nix modules link and source
 files from that path.
 
-That one command works on both macOS and Linux. It detects the OS and CPU
-architecture from `uname` and runs the right thing. Concretely it:
+The same script sets up a new machine and applies any later change to `nix/`.
+It is safe to re-run any time. Each run:
 
-1. Installs `curl` and `xz` with the system package manager if they are
-   missing (apt, dnf, pacman, zypper or Homebrew), since the Nix installer
-   needs both.
-2. Installs Nix itself if missing (multi-user daemon install).
-3. Enables flakes in `/etc/nix/nix.conf` if not already on (one-time, needs sudo).
-4. Moves aside any conflicting pre-existing symlink for `~/.zshrc`, `~/.vimrc`,
-   `~/.config/tmux/tmux.conf` or `~/.config/nvim` (e.g. from an old
-   `stow`-based setup) to `<file>.pre-nix-backup` rather than failing or
-   deleting it.
-5. Runs `darwin-rebuild switch` on macOS, or
-   `home-manager switch --flake .#mxj-<arch>-linux -b hm-backup` on Linux.
-   On macOS this also installs the Homebrew and App Store apps
-   (`nix/hosts/homebrew.nix`). On Linux it first installs 1Password to
-   `/opt/1Password` from the official tarball if it isn't already present.
+1. Installs Nix if missing (multi-user daemon install). On Linux it first
+   installs `curl` and `xz` with apt, dnf or pacman if they are missing, since
+   the Nix installer needs both.
+2. Enables flakes in `/etc/nix/nix.conf` if not already on (needs sudo).
+3. On Linux, installs 1Password to `/opt/1Password` from the official tarball
+   if it isn't already present.
+4. Switches to the config: `darwin-rebuild switch` on macOS, or
+   `home-manager switch --flake .#mxj-<arch>-linux -b hm-backup` on Linux. On
+   macOS this also installs the Homebrew and App Store apps
+   (`nix/hosts/homebrew.nix`).
 
 On a new Mac it uses `.#macbook-bootstrap`, which additionally uninstalls any
 Homebrew package not declared and sets the Dock and system defaults
-(`nix/hosts/provisioning.nix`). On a Mac that already has nix-darwin it uses
-`.#macbook-install`, which leaves those alone.
+(`nix/hosts/provisioning.nix`). Later runs use `.#macbook`, which leaves those
+alone.
 
 The home-manager activation also installs the `EasyDotnet` .NET global tool
 (the backend for easy-dotnet.nvim) and, if Neovim has never been set up,
 runs NvChad's headless bootstrap to install plugins, Mason tools and
 Treesitter parsers.
-
-It's idempotent, so it's safe to re-run any time. Re-run it whenever you add
-or remove a program.
-
-For everything else, use `refresh.sh` (see below). It applies settings only:
-if the config would add or remove a program, it stops and tells you to run
-`bootstrap.sh` instead.
 
 ### Supported platforms
 
@@ -137,24 +122,6 @@ The username and home directory are fixed in the flake, the Nix modules and
 the scripts, so using this on an account with a different name means editing
 those first.
 
-### Doing it manually instead
-
-If you'd rather run the underlying commands yourself instead of `bootstrap.sh`:
-
-```bash
-# macOS
-sudo nix --extra-experimental-features 'nix-command flakes' \
-  run nix-darwin -- switch --flake ~/.dotfiles#macbook-bootstrap
-
-# Linux: pick the attribute matching your CPU
-arch="$(uname -m | sed -e 's/x86_64/x86_64-linux/' -e 's/aarch64/aarch64-linux/' -e 's/arm64/aarch64-linux/')"
-nix --extra-experimental-features 'nix-command flakes' \
-  run home-manager -- switch --flake ~/.dotfiles#mxj-$arch -b hm-backup
-```
-
-(This assumes Nix is already installed and flakes are already enabled.
-`bootstrap.sh` is what handles both of those for you on a truly fresh machine.)
-
 ## Changing a dotfile
 
 Edit the file in the repo: `zsh/.zshrc`, `tmux/tmux.conf`, `vim/.vimrc`,
@@ -164,59 +131,35 @@ Edit the file in the repo: `zsh/.zshrc`, `tmux/tmux.conf`, `vim/.vimrc`,
 The Vim, Neovim, Alacritty and Claude Code files are symlinked straight to the
 repo. The zsh and tmux configs generated by home-manager `source` the repo
 files. Either way, a saved edit is live straight away: open a new shell, run
-`tmux source ~/.config/tmux/tmux.conf`, or restart nvim. No `refresh.sh` is
+`tmux source ~/.config/tmux/tmux.conf`, or restart nvim. No script run is
 needed, including for new files under `nvim/`.
 
-`refresh.sh` is only needed for changes to the `nix/` files themselves.
+The script is only needed for changes to the `nix/` files themselves.
 
 ## Adding or removing a program
 
-Where to declare it depends on how widely you want it applied:
+To install something on this machine only, install it directly:
+`nix profile install nixpkgs#<package>` for a command-line tool, or
+`brew install --cask <app>` for a Mac app. To have it on new machines too,
+declare it in the config and run the script. Removing it from the config takes
+it off `PATH` on the next run; `nix-collect-garbage` reclaims the disk space.
 
-- **Every machine, both OSs (the common case)**:
-  ```bash
-  ./scripts/add-package.sh <package>       # add
-  ./scripts/remove-package.sh <package>    # remove
-  ```
-  Both edit [`nix/home/packages.nix`](nix/home/packages.nix) and offer to run
-  `bootstrap.sh` for you. `add-package.sh` first checks that the name resolves
-  in nixpkgs (a fast attribute lookup that catches a typo before it is
-  committed or half-applied). The scripts are equivalent to editing
-  `packages.nix` by hand. Removing doesn't immediately delete anything from
-  `/nix/store`: it takes the package off this machine's `PATH` on the next
-  `bootstrap.sh`, and the files are reclaimed by the next garbage collection
-  (`nix-collect-garbage`).
-- **A one-off tool on this machine, not tracked anywhere**:
-  ```bash
-  ./scripts/add-package.sh --once <package>       # install
-  ./scripts/remove-package.sh --once <package>    # uninstall
-  ```
-  Runs `nix profile install`/`remove` directly. This won't show up on a fresh
-  machine (nothing in the repo declares it), and
-  `bootstrap.sh`/`refresh.sh`/`darwin-rebuild`/`home-manager switch` won't
-  touch it either way.
-- **This machine/OS only, but still declarative and reproducible**: add it to
-  the host-specific file instead, e.g.
-  [`nix/hosts/darwin.nix`](nix/hosts/darwin.nix)'s `environment.systemPackages`
-  or [`nix/hosts/homebrew.nix`](nix/hosts/homebrew.nix)'s `homebrew.casks` for
-  something only this Mac should get. Right now there's one host per platform,
-  so "host-specific" and "platform-specific" are the same thing. If a second
-  Mac or Linux box ever needs to diverge from this one, that's the point to
-  split `nix/hosts/` into one file per machine. The add/remove scripts don't
-  cover this case, so edit the file directly.
+### What goes where
 
-A GUI app on macOS goes in `nix/hosts/darwin.nix`'s `environment.systemPackages`
-when nixpkgs has a macOS build of it, and lands in `/Applications/Nix Apps`.
-Otherwise it goes in `nix/hosts/homebrew.nix`'s `homebrew.casks` (or
-`masApps`, for the App Store).
+- **Nix** ([`nix/home/packages.nix`](nix/home/packages.nix)): command-line
+  tools and toolchains, the same on every machine.
+- **Homebrew casks** ([`nix/hosts/homebrew.nix`](nix/hosts/homebrew.nix)): Mac
+  GUI apps. They install to `/Applications` and update themselves, which Nix's
+  read-only copies can't. The exception is Alacritty, whose cask Homebrew has
+  disabled, so it comes from Nix
+  ([`nix/hosts/darwin.nix`](nix/hosts/darwin.nix)).
+- **App Store** (`masApps` in `homebrew.nix`): Microsoft Outlook.
 
-### What's still Homebrew
+On Linux, GUI apps come from Nix too, except 1Password (see
+[`scripts/linux.sh`](scripts/linux.sh)).
 
-Only the apps nixpkgs has no macOS build for: Claude Desktop, Docker Desktop,
-Keybase and Twingate. Plus 1Password, which has one but refuses to run from
-anywhere but `/Applications`. Microsoft Outlook comes from the App Store.
-Everything else, CLI tools and `tfenv` included, comes from Nix. `bootstrap.sh`
-uninstalls any Homebrew package not declared in `homebrew.nix`, on a new Mac only.
+Keep each tool in one place. With the same tool from two package managers,
+whichever comes first on `PATH` wins, and Nix comes before Homebrew.
 
 ## Neovim
 

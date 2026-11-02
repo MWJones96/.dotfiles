@@ -87,10 +87,6 @@ with pkgs; [
   kubernetes-helm
   kind
   tfenv
-  # Client only: the daemon is Docker Desktop's, and the `compose`/`buildx`
-  # subcommands come from Docker.app via ~/.docker/cli-plugins, so they keep
-  # working regardless of where the `docker` binary itself comes from.
-  docker-client
 
   # nixpkgs' `yq` is the Python wrapper around jq; Homebrew's `yq` (and what
   # the scripts here expect) is mikefarah's Go rewrite, which is `yq-go`.
@@ -165,9 +161,10 @@ with pkgs; [
   # picked up via fontconfig.
   nerd-fonts.jetbrains-mono
 ]
-# On macOS, GUI apps are in nix/hosts/darwin.nix's environment.systemPackages
-# (or homebrew.nix) so they land in /Applications.
+# On macOS, GUI apps are Homebrew casks (nix/hosts/homebrew.nix).
 ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+  # On macOS, Docker Desktop ships its own.
+  docker-client
   alacritty
   obsidian
 ]

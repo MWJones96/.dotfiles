@@ -1,5 +1,5 @@
-# Applied ONCE, by scripts/bootstrap.sh, via darwinConfigurations.macbook-bootstrap.
-# Everyday rebuilds use .#macbook, which leaves this out.
+# Applied once, by scripts/mac.sh on a new Mac, via darwinConfigurations.macbook-bootstrap.
+# Later runs use .#macbook, which leaves this out.
 #
 # Nix activation is convergent: whatever a module declares is re-asserted on every
 # switch. That is what you want for packages and dotfiles, and wrong for anything a
@@ -25,8 +25,8 @@
     dock = {
       wvous-br-corner = 14;
       persistent-apps = [
-        "/Applications/Nix Apps/Firefox.app"
-        "/Applications/Nix Apps/Slack.app"
+        "/Applications/Firefox.app"
+        "/Applications/Slack.app"
         "/Applications/Microsoft Outlook.app"
         "/Applications/Nix Apps/Alacritty.app"
         "/Applications/Keybase.app"
@@ -34,9 +34,9 @@
         "/System/Applications/System Settings.app"
         "/Applications/Claude.app"
         "/Applications/Twingate.app"
-        "/Applications/Nix Apps/Obsidian.app"
+        "/Applications/Obsidian.app"
         "/Applications/1Password.app"
-        "/Applications/Nix Apps/zoom.us.app"
+        "/Applications/zoom.us.app"
       ];
     };
   };

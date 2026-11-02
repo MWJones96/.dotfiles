@@ -14,7 +14,7 @@
 
   # easy-dotnet.nvim's backend is a C# JSON-RPC server shipped as a dotnet
   # global tool, so neither lazy.nvim nor nixpkgs can supply it. Installing it
-  # here keeps `bootstrap.sh` a single command on a new machine. It lands in
+  # here keeps setup a single command on a new machine. It lands in
   # ~/.dotnet/tools, already on home.sessionPath.
   #
   # Only installed if absent — `dotnet tool update --global EasyDotnet` is

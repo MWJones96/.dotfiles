@@ -50,19 +50,13 @@
       linuxSystems = [ "x86_64-linux" "aarch64-linux" ];
     in
     {
-      # `darwin-rebuild switch --flake .#macbook`
-      darwinConfigurations.macbook = mkDarwin [ ];
-
-      # Run by scripts/bootstrap.sh: -install on a machine that already has nix-darwin,
-      # -bootstrap on a new one. See nix/hosts/provisioning.nix.
-      darwinConfigurations.macbook-install = mkDarwin [ ./nix/hosts/homebrew.nix ];
+      darwinConfigurations.macbook = mkDarwin [ ./nix/hosts/homebrew.nix ];
+      # New machine only, picked by scripts/mac.sh. See nix/hosts/provisioning.nix.
       darwinConfigurations.macbook-bootstrap = mkDarwin [
         ./nix/hosts/homebrew.nix
         ./nix/hosts/provisioning.nix
       ];
 
-      # `home-manager switch --flake .#mxj-x86_64-linux` or `.#mxj-aarch64-linux`
-      # — README.md has the `uname -m` one-liner that picks the right one.
       homeConfigurations = nixpkgs.lib.genAttrs
         (map (system: "${username}-${system}") linuxSystems)
         (name: mkHome (nixpkgs.lib.removePrefix "${username}-" name));

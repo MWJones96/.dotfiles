@@ -25,17 +25,9 @@
 
   nixpkgs.config.allowUnfree = true;
 
-  environment.systemPackages = with pkgs; [
-    alacritty
-    firefox
-    obsidian
-    slack
-    zoom-us
-  ];
-
-  # Zoom's updater can't write to the read-only nix copy, so it installs a second
-  # one in ~/Applications instead.
-  system.defaults.CustomSystemPreferences."/Library/Preferences/us.zoom.config".ZAutoUpdate = false;
+  # Homebrew's alacritty cask is disabled, so it comes from here. Other GUI apps
+  # are casks in homebrew.nix, where they can update themselves.
+  environment.systemPackages = [ pkgs.alacritty ];
 
   # The Dock, system.defaults and Homebrew live in provisioning.nix: they install or
   # reset things, which is a bootstrap step, not something to repeat on every rebuild.
